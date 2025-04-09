@@ -67,13 +67,16 @@ export default {
         return;
       }
       try {
-        const response = await fetch("http://localhost:8080/getNameOfUnit", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            "Content-Type": "application/json",
-          },
-        });
+        const response = await fetch(
+          `${this.$config.backEndUrl}getNameOfUnit`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${jwtToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
         if (!response.ok) router.push("/signIn");
         this.fetchSoldiers();
         this.unitName = await response.text();
@@ -85,7 +88,7 @@ export default {
     async fetchSoldiers() {
       const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
       try {
-        const response = await fetch("http://localhost:8080/getSoldiers", {
+        const response = await fetch(`${this.$config.backEndUrl}getSoldiers`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${jwtToken}`,
@@ -107,7 +110,7 @@ export default {
     async newServices() {
       const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
       try {
-        const response = await fetch("http://localhost:8080/calc", {
+        const response = await fetch(`${this.$config.backEndUrl}calc`, {
           method: "GET",
           headers: {
             Authorization: `Bearer ${jwtToken}`,
@@ -125,7 +128,7 @@ export default {
     async selectSoldier(soldier) {
       const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
       try {
-        const response = await fetch("http://localhost:8080/getSoldier", {
+        const response = await fetch(`${this.$config.backEndUrl}getSoldier`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${jwtToken}`,
@@ -146,7 +149,7 @@ export default {
       this.$router.push("/signIn");
     },
     navigateTo(path) {
-      window.location.href = `http://localhost:9090${path}`;
+      this.$router.push(path);
     },
   },
 };

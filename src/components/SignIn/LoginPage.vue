@@ -42,7 +42,7 @@ export default {
     async login() {
       try {
         this.errorMessage = "";
-        const response = await fetch("http://localhost:8080/performLogin", {
+        const response = await fetch(`${this.$config.backEndUrl}performLogin`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

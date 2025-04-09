@@ -63,7 +63,7 @@ export default {
   methods: {
     async saveSoldier() {
       try {
-        await fetch("http://localhost:8080/save", {
+        await fetch(`${this.$config.backEndUrl}save`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(this.soldier),

@@ -34,8 +34,8 @@ export default {
   data() {
     return {
       services: [],
-      pageUrl: "http://localhost:8080/getServices",
-      newServiceUrl: "http://localhost:8080/showFormForService",
+      pageUrl: `${this.$config.backEndUrl}getServices`,
+      newServiceUrl: `${this.$config.backEndUrl}showFormForService`,
     };
   },
   computed: {
