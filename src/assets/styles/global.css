@@ -1,0 +1,12 @@
+/* Global background applied to the whole page */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(
+    135deg,
+    #e0f2fe,
+    #f0fdf4
+  ); /* Soft Blue to Soft Green */
+}
