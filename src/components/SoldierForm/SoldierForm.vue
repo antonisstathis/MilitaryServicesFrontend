@@ -14,14 +14,14 @@
 
         <select id="situationSelect" v-model="soldier.situation">
           <option value="" disabled selected>Select an option</option>
-          <option value="option1">ένοπλος</option>
-          <option value="option2">άοπλος</option>
+          <option value="ένοπλος">ένοπλος</option>
+          <option value="άοπλος">άοπλος</option>
         </select>
 
         <select id="activeSelect" v-model="soldier.active">
           <option value="" disabled selected>Select an option</option>
-          <option value="option1">ενεργός</option>
-          <option value="option2">ΕΥ</option>
+          <option value="ενεργός">ενεργός</option>
+          <option value="ΕΥ">ΕΥ</option>
         </select>
 
         <button type="submit">Save</button>
@@ -62,14 +62,17 @@ export default {
   },
   methods: {
     async saveSoldier() {
+      const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
       try {
-        await fetch(`${this.$config.backEndUrl}save`, {
+        await fetch(`${this.$config.backEndUrl}changeSoldSituation`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify(this.soldier),
         });
-        const router = useRouter();
-        router.push("/home");
+        this.goToSoldierForm();
       } catch (error) {
         console.error("Request failed:", error);
       }
