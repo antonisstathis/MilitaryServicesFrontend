@@ -4,11 +4,18 @@
       <h1>Add Soldier</h1>
       <form @submit.prevent="saveSoldier">
         <input type="hidden" v-model="soldier.id" placeholder="Id" disabled />
-        <input type="text" v-model="soldier.name" placeholder="Name" required />
+        <input
+          type="text"
+          v-model="soldier.name"
+          placeholder="Name"
+          readonly
+          required
+        />
         <input
           type="text"
           v-model="soldier.surname"
           placeholder="Surname"
+          readonly
           required
         />
 
