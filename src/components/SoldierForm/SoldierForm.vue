@@ -14,14 +14,14 @@
 
         <select id="situationSelect" v-model="soldier.situation">
           <option value="" disabled selected>Select an option</option>
-          <option value="ένοπλος">ένοπλος</option>
-          <option value="άοπλος">άοπλος</option>
+          <option value="armed">armed</option>
+          <option value="unarmed">unarmed</option>
         </select>
 
         <select id="activeSelect" v-model="soldier.active">
           <option value="" disabled selected>Select an option</option>
-          <option value="ενεργός">ενεργός</option>
-          <option value="ΕΥ">ΕΥ</option>
+          <option value="active">active</option>
+          <option value="free of duty">free of duty</option>
         </select>
 
         <button type="submit">Save</button>
