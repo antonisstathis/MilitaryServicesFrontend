@@ -5,37 +5,45 @@
         <li><router-link to="/home">Home</router-link></li>
         <li><router-link to="/personnel">Personnel</router-link></li>
         <li><router-link to="/soldiers">Soldiers</router-link></li>
-        <li><router-link to="/services">Services</router-link></li>
+        <li><router-link to="/servicesOfUnit">Services</router-link></li>
       </ul>
     </nav>
     <div id="header">
       <h1>{{ unitName }}</h1>
       <button class="primary-btn" @click="newServices">New Services</button>
-      <button class="primary-btn" @click="navigateTo('/soldierForm')">
-        Add Soldier
-      </button>
-      <button class="primary-btn" @click="navigateTo('/home')">
+      <button class="primary-btn" @click="navigateTo('/servicesOfUnit')">
         Services of Unit
       </button>
+      <button class="primary-btn" @click="fetchSoldiers">Last Services</button>
+      <input type="date" id="myDate" @change="fetchPrevCalculation($event)" />
       <button class="logout-btn" @click="logout">Log Out</button>
     </div>
     <div id="table">
       <table>
         <thead>
           <tr>
-            <th v-for="key in tableHeaders.slice(1)" :key="key">
-              {{ key }}
+            <th
+              v-for="(title, index) in tableHeaders"
+              :key="index"
+              :title="title"
+            >
+              {{ title }}
             </th>
           </tr>
         </thead>
         <tbody>
           <tr
             v-for="soldier in soldiers"
-            :key="soldier.id"
+            :key="soldier.token"
             @click="selectSoldier(soldier)"
           >
-            <td v-for="key in tableHeaders.slice(1)" :key="key">
-              {{ soldier[key] }}
+            <td
+              v-for="[key, value] in Object.entries(soldier).filter(
+                ([key]) => key !== 'token'
+              )"
+              :key="key"
+            >
+              {{ value }}
             </td>
           </tr>
         </tbody>
@@ -57,6 +65,7 @@ export default {
   },
   mounted() {
     this.getNameOfUnit();
+    this.fetchSoldiers();
   },
   methods: {
     async getNameOfUnit() {
@@ -78,14 +87,36 @@ export default {
           }
         );
         if (!response.ok) router.push("/signIn");
-        this.fetchSoldiers();
         this.unitName = await response.text();
       } catch (error) {
         console.error(error);
         alert(error);
       }
     },
+    async fetchTitles(prefix) {
+      const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
+      try {
+        const response = await fetch(
+          `${this.$config.backEndUrl}titles?prefix=${prefix}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${jwtToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const router = useRouter();
+        if (!response.ok) router.push("/signIn");
+        const data = await response.json();
+        if (data.length) this.tableHeaders = data;
+      } catch (error) {
+        console.error(error);
+        alert(error);
+      }
+    },
     async fetchSoldiers() {
+      await this.fetchTitles("title.lastcalc");
       const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
       try {
         const response = await fetch(`${this.$config.backEndUrl}getSoldiers`, {
@@ -98,10 +129,31 @@ export default {
         const router = useRouter();
         if (!response.ok) router.push("/signIn");
         const data = await response.json();
-        if (data.length) {
-          this.tableHeaders = Object.keys(data[0]);
-          this.soldiers = data;
-        }
+        if (data.length) this.soldiers = Object.values(data);
+      } catch (error) {
+        console.error(error);
+        alert(error);
+      }
+    },
+    async fetchPrevCalculation(event) {
+      await this.fetchTitles("title.prevcalc");
+      const selectedDate = event.target.value;
+      const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
+      try {
+        const response = await fetch(
+          `${this.$config.backEndUrl}getPreviousCalculation?date=${selectedDate}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${jwtToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const router = useRouter();
+        if (!response.ok) router.push("/signIn");
+        const data = await response.json();
+        if (data.length) this.soldiers = Object.values(data);
       } catch (error) {
         console.error(error);
         alert(error);
@@ -282,5 +334,21 @@ tr:hover {
 .menu a:hover {
   background: rgba(255, 255, 255, 0.3);
   color: #22c55e; /* Soft Green */
+}
+
+input[type="date"] {
+  padding: 0.6rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 1rem;
+  width: 100%;
+  max-width: 300px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="date"]:focus {
+  border-color: #3b82f6; /* blue-500 */
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  outline: none;
 }
 </style>
