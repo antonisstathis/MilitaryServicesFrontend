@@ -32,7 +32,6 @@
 </template>
 
 <script>
-import { useRouter } from "vue-router";
 import axios from "axios";
 
 export default {
@@ -49,10 +48,9 @@ export default {
   },
   methods: {
     async getNameOfUnit() {
-      const router = useRouter();
       const jwtToken = localStorage.getItem("jwtToken");
       if (!jwtToken) {
-        router.push("/signIn");
+        this.$router.push("/signIn");
         return;
       }
       try {
@@ -69,7 +67,7 @@ export default {
       } catch (error) {
         console.error(error);
         if (error.response && error.response.status === 401) {
-          router.push("/signIn");
+          this.$router.push("/signIn");
           return;
         }
         alert(error);
@@ -77,7 +75,6 @@ export default {
     },
     async fetchServicesOfUnit() {
       const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
-      const router = useRouter();
       try {
         const response = await axios.get(
           `${this.$config.backEndUrl}getServices`,
@@ -96,7 +93,7 @@ export default {
       } catch (error) {
         console.error(error);
         if (error.response && error.response.status === 401) {
-          router.push("/signIn");
+          this.$router.push("/signIn");
           return;
         }
         alert(error);

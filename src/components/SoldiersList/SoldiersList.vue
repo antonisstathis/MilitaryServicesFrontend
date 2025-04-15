@@ -60,7 +60,6 @@
 
 <script>
 import axios from "axios";
-import { useRouter } from "vue-router";
 
 export default {
   data() {
@@ -80,10 +79,9 @@ export default {
       this.fetchSoldiers();
     },
     async getNameOfUnit() {
-      const router = useRouter();
       const jwtToken = localStorage.getItem("jwtToken");
       if (!jwtToken) {
-        router.push("/signIn");
+        this.$router.push("/signIn");
         return;
       }
       try {
@@ -97,20 +95,19 @@ export default {
           }
         );
 
-        this.unitName = await response.data;
+        this.unitName = response.data;
       } catch (error) {
         console.error(error);
         if (error.response && error.response.status === 401) {
-          router.push("/signIn");
+          this.$router.push("/signIn");
           return;
         }
       }
     },
     async fetchTitles(prefix) {
-      const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
+      const jwtToken = localStorage.getItem("jwtToken");
       const lang = localStorage.getItem("lang") || "en";
       this.locale = lang;
-      const router = useRouter();
       try {
         const response = await axios.get(`${this.$config.backEndUrl}titles`, {
           params: {
@@ -123,12 +120,12 @@ export default {
           },
         });
 
-        const data = await response.data;
+        const data = response.data;
         if (data.length) this.tableHeaders = data;
       } catch (error) {
         console.error(error);
         if (error.response && error.response.status === 401) {
-          router.push("/signIn");
+          this.$router.push("/signIn");
           return;
         }
         alert(error);
@@ -136,8 +133,7 @@ export default {
     },
     async fetchSoldiers() {
       await this.fetchTitles("title.lastcalc");
-      const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
-      const router = useRouter();
+      const jwtToken = localStorage.getItem("jwtToken");
       try {
         const lang = localStorage.getItem("lang");
         const response = await axios.get(
@@ -152,7 +148,7 @@ export default {
             },
           }
         );
-        const data = await response.data;
+        const data = response.data;
         if (data.length) this.soldiers = Object.values(data);
 
         const dateValue = this.soldiers[0].date;
@@ -164,7 +160,7 @@ export default {
       } catch (error) {
         console.error(error);
         if (error.response && error.response.status === 401) {
-          router.push("/signIn");
+          this.$router.push("/signIn");
           return;
         }
         alert(error);
@@ -174,8 +170,7 @@ export default {
       const lang = localStorage.getItem("lang");
       await this.fetchTitles("title.prevcalc");
       const selectedDate = event.target.value;
-      const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
-      const router = useRouter();
+      const jwtToken = localStorage.getItem("jwtToken");
       try {
         const response = await axios.get(
           `${this.$config.backEndUrl}getPreviousCalculation`,
@@ -190,20 +185,19 @@ export default {
             },
           }
         );
-        const data = await response.data;
+        const data = response.data;
         if (data.length) this.soldiers = Object.values(data);
       } catch (error) {
         console.error(error);
         if (error.response && error.response.status === 401) {
-          router.push("/signIn");
+          this.$router.push("/signIn");
           return;
         }
         alert(error);
       }
     },
     async newServices() {
-      const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
-      const router = useRouter();
+      const jwtToken = localStorage.getItem("jwtToken");
       try {
         await axios.get(`${this.$config.backEndUrl}calc`, {
           headers: {
@@ -215,15 +209,14 @@ export default {
       } catch (error) {
         console.error(error);
         if (error.response && error.response.status === 401) {
-          router.push("/signIn");
+          this.$router.push("/signIn");
           return;
         }
         alert(error);
       }
     },
     async selectSoldier(soldier) {
-      const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
-      const router = useRouter();
+      const jwtToken = localStorage.getItem("jwtToken");
       try {
         const response = await axios.post(
           `${this.$config.backEndUrl}getSoldier`,
@@ -235,13 +228,13 @@ export default {
             },
           }
         );
-        const data = await response.data;
+        const data = response.data;
         localStorage.setItem("formData", JSON.stringify(data));
-        router.push("/soldierForm");
+        this.$router.push("/soldierForm");
       } catch (error) {
         console.error("Request failed:", error);
         if (error.response && error.response.status === 401) {
-          router.push("/signIn");
+          this.$router.push("/signIn");
           return;
         }
       }

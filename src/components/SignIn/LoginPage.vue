@@ -2,7 +2,6 @@
   <div class="login-container">
     <h1>Login</h1>
 
-    <!-- Error Message (Initially Hidden) -->
     <div v-if="errorMessage" class="error-message">
       {{ errorMessage }}
     </div>
@@ -22,6 +21,8 @@
 </template>
 
 <script>
+import axios from "axios";
+
 export default {
   name: "LoginPage",
   data() {
@@ -42,25 +43,32 @@ export default {
     async login() {
       try {
         this.errorMessage = "";
-        const response = await fetch(`${this.$config.backEndUrl}performLogin`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
+        const response = await axios.post(
+          `${this.$config.backEndUrl}performLogin`,
+          {
             username: this.username,
             password: this.password,
-            errorMessage: "",
-          }),
-        });
+          },
+          {
+            headers: { "Content-Type": "application/json" },
+          }
+        );
 
-        if (response.status === 401) {
-          this.errorMessage = "Invalid username or password";
-        } else if (response.ok) {
-          const responseData = await response.json();
+        if (response.status === 200) {
+          const responseData = response.data;
           this.jwtToken = responseData.token;
           this.loginSuccessful();
-        } else this.errorMessage = "An error occured. Please try again.";
+        } else {
+          this.errorMessage = "An error occurred. Please try again.";
+        }
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Login error:", error);
+
+        if (error.response && error.response.status === 401) {
+          this.errorMessage = "Invalid username or password";
+        } else {
+          this.errorMessage = "An error occurred. Please try again.";
+        }
       }
     },
   },

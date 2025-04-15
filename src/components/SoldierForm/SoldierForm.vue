@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { useRouter } from "vue-router";
+import axios from "axios";
 
 export default {
   data() {
@@ -54,10 +54,9 @@ export default {
     };
   },
   mounted() {
-    const router = useRouter();
     const jwtToken = localStorage.getItem("jwtToken");
     if (!jwtToken) {
-      router.push("/signIn");
+      this.$router.push("/signIn");
       return;
     }
     const storedData = localStorage.getItem("formData");
@@ -69,19 +68,26 @@ export default {
   },
   methods: {
     async saveSoldier() {
-      const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
+      const jwtToken = localStorage.getItem("jwtToken");
       try {
-        await fetch(`${this.$config.backEndUrl}changeSoldSituation`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(this.soldier),
-        });
+        await axios.post(
+          `${this.$config.backEndUrl}changeSoldSituation`,
+          this.soldier,
+          {
+            headers: {
+              Authorization: `Bearer ${jwtToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
         this.goToSoldierForm();
       } catch (error) {
-        console.error("Request failed:", error);
+        console.error(error);
+        if (error.response && error.response.status === 401) {
+          this.$router.push("/signIn");
+          return;
+        }
+        alert(error);
       }
     },
     goToSoldierForm() {
