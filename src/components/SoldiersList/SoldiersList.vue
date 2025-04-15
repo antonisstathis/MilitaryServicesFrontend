@@ -2,10 +2,20 @@
   <div id="app">
     <nav class="menu">
       <ul>
-        <li><router-link to="/home">Home</router-link></li>
-        <li><router-link to="/personnel">Personnel</router-link></li>
-        <li><router-link to="/soldiers">Soldiers</router-link></li>
-        <li><router-link to="/servicesOfUnit">Services</router-link></li>
+        <li>
+          <router-link to="/home">{{ titles.homelabel }}</router-link>
+        </li>
+        <li>
+          <router-link to="/personnel">{{ titles.personnellabel }}</router-link>
+        </li>
+        <li>
+          <router-link to="/soldiers">{{ titles.soldierslabel }}</router-link>
+        </li>
+        <li>
+          <router-link to="/servicesOfUnit">{{
+            titles.serviceslabel
+          }}</router-link>
+        </li>
       </ul>
     </nav>
     <div id="header">
@@ -16,13 +26,19 @@
           <option value="el">🇬🇷 Ελληνικά</option>
         </select>
       </div>
-      <button class="primary-btn" @click="newServices">New Services</button>
-      <button class="primary-btn" @click="navigateTo('/servicesOfUnit')">
-        Services of Unit
+      <button class="primary-btn" @click="newServices">
+        {{ titles.newservicesbutton }}
       </button>
-      <button class="primary-btn" @click="fetchSoldiers">Last Services</button>
+      <button class="primary-btn" @click="navigateTo('/servicesOfUnit')">
+        {{ titles.servicesofunitbutton }}
+      </button>
+      <button class="primary-btn" @click="fetchSoldiers">
+        {{ titles.lastservicesbutton }}
+      </button>
       <input type="date" id="date" @change="fetchPrevCalculation($event)" />
-      <button class="logout-btn" @click="logout">Log Out</button>
+      <button class="logout-btn" @click="logout">
+        {{ titles.logoutbutton }}
+      </button>
     </div>
     <div id="table">
       <table>
@@ -67,16 +83,46 @@ export default {
       unitName: "",
       soldiers: [],
       tableHeaders: [],
+      titles: {},
     };
   },
   mounted() {
     this.getNameOfUnit();
     this.fetchSoldiers();
+    this.fetchElementTitles();
   },
   methods: {
     changeLanguage() {
       localStorage.setItem("lang", this.locale);
       this.fetchSoldiers();
+      this.fetchElementTitles();
+    },
+    async fetchElementTitles() {
+      const jwtToken = localStorage.getItem("jwtToken");
+      const lang = localStorage.getItem("lang") || "en";
+      if (!jwtToken) {
+        this.$router.push("/signIn");
+        return;
+      }
+      try {
+        const response = await axios.get(`${this.$config.backEndUrl}titles`, {
+          params: {
+            lang: lang,
+          },
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+        this.titles = response.data;
+        console.log(this.titles);
+      } catch (error) {
+        console.error(error);
+        if (error.response && error.response.status === 401) {
+          this.$router.push("/signIn");
+          return;
+        }
+      }
     },
     async getNameOfUnit() {
       const jwtToken = localStorage.getItem("jwtToken");
@@ -104,12 +150,12 @@ export default {
         }
       }
     },
-    async fetchTitles(prefix) {
+    async fetchTableTitles(prefix) {
       const jwtToken = localStorage.getItem("jwtToken");
       const lang = localStorage.getItem("lang") || "en";
       this.locale = lang;
       try {
-        const response = await axios.get(`${this.$config.backEndUrl}titles`, {
+        const response = await axios.get(`${this.$config.backEndUrl}mtable`, {
           params: {
             prefix: prefix,
             lang: lang,
@@ -132,7 +178,7 @@ export default {
       }
     },
     async fetchSoldiers() {
-      await this.fetchTitles("title.lastcalc");
+      await this.fetchTableTitles("title.lastcalc");
       const jwtToken = localStorage.getItem("jwtToken");
       try {
         const lang = localStorage.getItem("lang");
@@ -168,7 +214,7 @@ export default {
     },
     async fetchPrevCalculation(event) {
       const lang = localStorage.getItem("lang");
-      await this.fetchTitles("title.prevcalc");
+      await this.fetchTableTitles("title.prevcalc");
       const selectedDate = event.target.value;
       const jwtToken = localStorage.getItem("jwtToken");
       try {
