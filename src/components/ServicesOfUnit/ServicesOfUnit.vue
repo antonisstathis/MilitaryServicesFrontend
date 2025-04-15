@@ -33,6 +33,7 @@
 
 <script>
 import { useRouter } from "vue-router";
+import axios from "axios";
 
 export default {
   data() {
@@ -55,38 +56,50 @@ export default {
         return;
       }
       try {
-        const response = await fetch(
+        const response = await axios.get(
           `${this.$config.backEndUrl}getNameOfUnit`,
           {
-            method: "GET",
             headers: {
               Authorization: `Bearer ${jwtToken}`,
               "Content-Type": "application/json",
             },
           }
         );
-        if (!response.ok) router.push("/signIn");
-        this.unitName = await response.text();
+        this.unitName = await response.data;
       } catch (error) {
         console.error(error);
+        if (error.response && error.response.status === 401) {
+          router.push("/signIn");
+          return;
+        }
         alert(error);
       }
     },
     async fetchServicesOfUnit() {
       const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
-      const response = await fetch(`${this.$config.backEndUrl}getServices`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${jwtToken}`,
-          "Content-Type": "application/json",
-        },
-      });
       const router = useRouter();
-      if (!response.ok) router.push("/signIn");
-      const data = await response.json();
-      if (data.length) {
-        this.tableHeaders = Object.keys(data[0]);
-        this.services = data;
+      try {
+        const response = await axios.get(
+          `${this.$config.backEndUrl}getServices`,
+          {
+            headers: {
+              Authorization: `Bearer ${jwtToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = response.data;
+        if (data.length) {
+          this.tableHeaders = Object.keys(data[0]);
+          this.services = data;
+        }
+      } catch (error) {
+        console.error(error);
+        if (error.response && error.response.status === 401) {
+          router.push("/signIn");
+          return;
+        }
+        alert(error);
       }
     },
     navigateTo(path) {
