@@ -2,6 +2,7 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router"; // Your router configuration
 import axios from "axios"; // Import axios
+import i18n from "./i18n";
 import "./assets/styles/global.css";
 
 // Create Vue app
@@ -31,6 +32,7 @@ axios.interceptors.request.use((config) => {
 
 // Use the router and store
 app.use(router);
+app.use(i18n);
 
 // Mount the app
 app.mount("#app");

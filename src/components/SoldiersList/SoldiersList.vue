@@ -3,18 +3,16 @@
     <nav class="menu">
       <ul>
         <li>
-          <router-link to="/home">{{ titles.homelabel }}</router-link>
+          <router-link to="/home">{{ titles.home }}</router-link>
         </li>
         <li>
-          <router-link to="/personnel">{{ titles.personnellabel }}</router-link>
+          <router-link to="/personnel">{{ titles.personnel }}</router-link>
         </li>
         <li>
-          <router-link to="/soldiers">{{ titles.soldierslabel }}</router-link>
+          <router-link to="/soldiers">{{ titles.soldiers }}</router-link>
         </li>
         <li>
-          <router-link to="/servicesOfUnit">{{
-            titles.serviceslabel
-          }}</router-link>
+          <router-link to="/servicesOfUnit">{{ titles.services }}</router-link>
         </li>
       </ul>
     </nav>
@@ -27,17 +25,17 @@
         </select>
       </div>
       <button class="primary-btn" @click="newServices">
-        {{ titles.newservicesbutton }}
+        {{ titles.newservices }}
       </button>
       <button class="primary-btn" @click="navigateTo('/servicesOfUnit')">
-        {{ titles.servicesofunitbutton }}
+        {{ titles.servicesofunit }}
       </button>
       <button class="primary-btn" @click="fetchSoldiers">
-        {{ titles.lastservicesbutton }}
+        {{ titles.lastservices }}
       </button>
       <input type="date" id="date" @change="fetchPrevCalculation($event)" />
       <button class="logout-btn" @click="logout">
-        {{ titles.logoutbutton }}
+        {{ titles.logout }}
       </button>
     </div>
     <div id="table">
@@ -78,6 +76,8 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
+//import { useI18n } from "vue-i18n";
+//const { locale } = useI18n();
 
 export default {
   setup() {
@@ -91,30 +91,29 @@ export default {
     const locale = ref(localStorage.getItem("lang") || "en");
 
     // Lifecycle hooks
-    onMounted(() => {
+    onMounted(async () => {
       getNameOfUnit();
       fetchSoldiers();
-      fetchElementTitles();
+      titles.value = await fetchElementTitles();
     });
 
     // Methods
-    const changeLanguage = () => {
+    const changeLanguage = async () => {
       localStorage.setItem("lang", locale.value);
       fetchSoldiers();
-      fetchElementTitles();
+      titles.value = await fetchElementTitles();
     };
 
     const fetchElementTitles = async () => {
       const lang = localStorage.getItem("lang") || "en";
-      try {
-        const response = await axios.get("titles", {
-          params: { lang },
-        });
-        titles.value = response.data;
-      } catch (error) {
-        console.error(error);
-        if (error.response?.status === 401) router.push("/signIn");
-      }
+      const titlesFile = await import(`@/locales/${lang}.json`);
+      const titles = titlesFile.default;
+
+      return Object.fromEntries(
+        Object.entries(titles)
+          .filter(([key]) => key.startsWith("element."))
+          .map(([key, value]) => [key.slice("element.".length), value])
+      );
     };
 
     const getNameOfUnit = async () => {
@@ -129,27 +128,26 @@ export default {
 
     const fetchTableTitles = async (prefix) => {
       const lang = localStorage.getItem("lang") || "en";
-      locale.value = lang;
+
       try {
-        const response = await axios.get("mtable", {
-          params: { prefix, lang },
-        });
-        const data = response.data;
-        if (data.length) tableHeaders.value = data;
+        const titlesFile = await import(`@/locales/${lang}.json`);
+        const allTitles = titlesFile.default;
+
+        return Object.fromEntries(
+          Object.entries(allTitles).filter(([key]) =>
+            key.startsWith(prefix + ".")
+          )
+        );
       } catch (error) {
-        console.error(error);
-        if (error.response?.status === 401) router.push("/signIn");
-        alert(error);
+        console.error(`Could not load titles for language '${lang}':`, error);
+        return {};
       }
     };
 
     const fetchSoldiers = async () => {
-      await fetchTableTitles("title.lastcalc");
+      tableHeaders.value = await fetchTableTitles("lastcalc");
       try {
-        const lang = localStorage.getItem("lang") || "en";
-        const response = await axios.get("getSoldiers", {
-          params: { lang },
-        });
+        const response = await axios.get("getSoldiers", {});
         const data = response.data;
         if (data.length) soldiers.value = Object.values(data);
 
@@ -169,12 +167,11 @@ export default {
     };
 
     const fetchPrevCalculation = async (event) => {
-      const lang = localStorage.getItem("lang");
-      await fetchTableTitles("title.prevcalc");
+      tableHeaders.value = await fetchTableTitles("prevcalc");
       const selectedDate = event.target.value;
       try {
         const response = await axios.get("getPreviousCalculation", {
-          params: { date: selectedDate, lang },
+          params: { date: selectedDate },
         });
         const data = response.data;
         if (data.length) soldiers.value = Object.values(data);

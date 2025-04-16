@@ -1,0 +1,28 @@
+{
+  "element.home": "Home",
+  "element.personnel": "Personnel",
+  "element.soldiers": "Soldiers",
+  "element.services": "Services",
+  "element.newservices": "New Services",
+  "element.servicesofunit": "Services Of Unit",
+  "element.lastservices": "Last Services",
+  "element.logout": "Logout",
+
+  "prevcalc.registration": "Registration Number",
+  "prevcalc.name": "Name",
+  "prevcalc.surname": "Surname",
+  "prevcalc.situation": "Situation",
+  "prevcalc.active": "Active",
+  "prevcalc.service": "Service",
+  "prevcalc.date": "Date",
+  "prevcalc.armed": "Armed",
+  "prevcalc.fired": "Fired",
+
+  "lastcalc.name": "Name",
+  "lastcalc.surname": "Surname",
+  "lastcalc.situation": "Situation",
+  "lastcalc.active": "Active",
+  "lastcalc.service": "Service",
+  "lastcalc.date": "Date",
+  "lastcalc.armed": "Armed"
+}

@@ -1,0 +1,28 @@
+{
+  "element.home": "Αρχική",
+  "element.personnel": "Προσωπικό",
+  "element.soldiers": "Στρατιώτες",
+  "element.services": "Υπηρεσίες",
+  "element.newservices": "Νέες Υπηρεσίες",
+  "element.servicesofunit": "Υπηρεσίες Μονάδας",
+  "element.lastservices": "Τελευταίες υπηρεσίες",
+  "element.logout": "Αποσύνδεση",
+
+  "prevcalc.registration": "ΑΣΜ",
+  "prevcalc.name": "Όνομα",
+  "prevcalc.surname": "Επώνυμο",
+  "prevcalc.situation": "Ικανότητα",
+  "prevcalc.active": "Κατάσταση Στρατιώτη",
+  "prevcalc.service": "Υπηρεσία",
+  "prevcalc.date": "Ημερομηνία",
+  "prevcalc.armed": "Κατηγορία Υπηρεσίας",
+  "prevcalc.fired": "Διαθεσιμότητα",
+
+  "lastcalc.name": "Όνομα",
+  "lastcalc.surname": "Επώνυμο",
+  "lastcalc.situation": "Ικανότητα",
+  "lastcalc.active": "Κατάσταση Στρατιώτη",
+  "lastcalc.service": "Υπηρεσία",
+  "lastcalc.date": "Ημερομηνία",
+  "lastcalc.armed": "Κατηγορία Υπηρεσίας"
+}
