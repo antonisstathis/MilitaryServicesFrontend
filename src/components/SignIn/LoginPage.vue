@@ -21,33 +21,38 @@
 </template>
 
 <script>
+import { ref } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
 
 export default {
   name: "LoginPage",
-  data() {
-    return {
-      username: "",
-      password: "",
-      jwtToken: "",
-      errorMessage: "",
+  setup() {
+    const router = useRouter();
+
+    const username = ref("");
+    const password = ref("");
+    const jwtToken = ref("");
+    const errorMessage = ref("");
+
+    const loginSuccessful = () => {
+      if (jwtToken.value) {
+        localStorage.setItem("jwtToken", jwtToken.value);
+        router.push("/home");
+      } else {
+        console.error("JWT Token not found in response.");
+      }
     };
-  },
-  methods: {
-    loginSuccessful() {
-      if (this.jwtToken) {
-        localStorage.setItem("jwtToken", this.jwtToken);
-        this.$router.push("/home");
-      } else console.error("JWT Token token not found in response.");
-    },
-    async login() {
+
+    const login = async () => {
       try {
-        this.errorMessage = "";
+        errorMessage.value = "";
+
         const response = await axios.post(
-          `${this.$config.backEndUrl}performLogin`,
+          "/performLogin",
           {
-            username: this.username,
-            password: this.password,
+            username: username.value,
+            password: password.value,
           },
           {
             headers: { "Content-Type": "application/json" },
@@ -55,22 +60,29 @@ export default {
         );
 
         if (response.status === 200) {
-          const responseData = response.data;
-          this.jwtToken = responseData.token;
-          this.loginSuccessful();
+          jwtToken.value = response.data.token;
+          loginSuccessful();
         } else {
-          this.errorMessage = "An error occurred. Please try again.";
+          errorMessage.value = "An error occurred. Please try again.";
         }
       } catch (error) {
         console.error("Login error:", error);
 
-        if (error.response && error.response.status === 401) {
-          this.errorMessage = "Invalid username or password";
+        if (error.response?.status === 401) {
+          errorMessage.value = "Invalid username or password";
         } else {
-          this.errorMessage = "An error occurred. Please try again.";
+          errorMessage.value = "An error occurred. Please try again.";
         }
       }
-    },
+    };
+
+    return {
+      username,
+      password,
+      jwtToken,
+      errorMessage,
+      login,
+    };
   },
 };
 </script>

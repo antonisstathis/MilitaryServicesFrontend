@@ -75,223 +75,167 @@
 </template>
 
 <script>
+import { ref, onMounted } from "vue";
 import axios from "axios";
+import { useRouter } from "vue-router";
 
 export default {
-  data() {
-    return {
-      unitName: "",
-      soldiers: [],
-      tableHeaders: [],
-      titles: {},
+  setup() {
+    const router = useRouter();
+
+    // State variables
+    const unitName = ref("");
+    const soldiers = ref([]);
+    const tableHeaders = ref([]);
+    const titles = ref({});
+    const locale = ref(localStorage.getItem("lang") || "en");
+
+    // Lifecycle hooks
+    onMounted(() => {
+      getNameOfUnit();
+      fetchSoldiers();
+      fetchElementTitles();
+    });
+
+    // Methods
+    const changeLanguage = () => {
+      localStorage.setItem("lang", locale.value);
+      fetchSoldiers();
+      fetchElementTitles();
     };
-  },
-  mounted() {
-    this.getNameOfUnit();
-    this.fetchSoldiers();
-    this.fetchElementTitles();
-  },
-  methods: {
-    changeLanguage() {
-      localStorage.setItem("lang", this.locale);
-      this.fetchSoldiers();
-      this.fetchElementTitles();
-    },
-    async fetchElementTitles() {
-      const jwtToken = localStorage.getItem("jwtToken");
+
+    const fetchElementTitles = async () => {
       const lang = localStorage.getItem("lang") || "en";
-      if (!jwtToken) {
-        this.$router.push("/signIn");
-        return;
-      }
       try {
-        const response = await axios.get(`${this.$config.backEndUrl}titles`, {
-          params: {
-            lang: lang,
-          },
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            "Content-Type": "application/json",
-          },
+        const response = await axios.get("titles", {
+          params: { lang },
         });
-        this.titles = response.data;
-        console.log(this.titles);
+        titles.value = response.data;
       } catch (error) {
         console.error(error);
-        if (error.response && error.response.status === 401) {
-          this.$router.push("/signIn");
-          return;
-        }
+        if (error.response?.status === 401) router.push("/signIn");
       }
-    },
-    async getNameOfUnit() {
-      const jwtToken = localStorage.getItem("jwtToken");
-      if (!jwtToken) {
-        this.$router.push("/signIn");
-        return;
-      }
-      try {
-        const response = await axios.get(
-          `${this.$config.backEndUrl}getNameOfUnit`,
-          {
-            headers: {
-              Authorization: `Bearer ${jwtToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+    };
 
-        this.unitName = response.data;
+    const getNameOfUnit = async () => {
+      try {
+        const response = await axios.get("getNameOfUnit");
+        unitName.value = response.data;
       } catch (error) {
         console.error(error);
-        if (error.response && error.response.status === 401) {
-          this.$router.push("/signIn");
-          return;
-        }
+        if (error.response?.status === 401) router.push("/signIn");
       }
-    },
-    async fetchTableTitles(prefix) {
-      const jwtToken = localStorage.getItem("jwtToken");
-      const lang = localStorage.getItem("lang") || "en";
-      this.locale = lang;
-      try {
-        const response = await axios.get(`${this.$config.backEndUrl}mtable`, {
-          params: {
-            prefix: prefix,
-            lang: lang,
-          },
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            "Content-Type": "application/json",
-          },
-        });
+    };
 
+    const fetchTableTitles = async (prefix) => {
+      const lang = localStorage.getItem("lang") || "en";
+      locale.value = lang;
+      try {
+        const response = await axios.get("mtable", {
+          params: { prefix, lang },
+        });
         const data = response.data;
-        if (data.length) this.tableHeaders = data;
+        if (data.length) tableHeaders.value = data;
       } catch (error) {
         console.error(error);
-        if (error.response && error.response.status === 401) {
-          this.$router.push("/signIn");
-          return;
-        }
+        if (error.response?.status === 401) router.push("/signIn");
         alert(error);
       }
-    },
-    async fetchSoldiers() {
-      await this.fetchTableTitles("title.lastcalc");
-      const jwtToken = localStorage.getItem("jwtToken");
-      try {
-        const lang = localStorage.getItem("lang");
-        const response = await axios.get(
-          `${this.$config.backEndUrl}getSoldiers`,
-          {
-            params: {
-              lang: lang,
-            },
-            headers: {
-              Authorization: `Bearer ${jwtToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = response.data;
-        if (data.length) this.soldiers = Object.values(data);
+    };
 
-        const dateValue = this.soldiers[0].date;
-        const formattedDate = dateValue.split("-").reverse().join("-");
-        const date = new Date(formattedDate);
-        document.getElementById("date").value = date
-          .toISOString()
-          .split("T")[0];
+    const fetchSoldiers = async () => {
+      await fetchTableTitles("title.lastcalc");
+      try {
+        const lang = localStorage.getItem("lang") || "en";
+        const response = await axios.get("getSoldiers", {
+          params: { lang },
+        });
+        const data = response.data;
+        if (data.length) soldiers.value = Object.values(data);
+
+        const dateValue = soldiers.value[0]?.date;
+        if (dateValue) {
+          const formattedDate = dateValue.split("-").reverse().join("-");
+          const date = new Date(formattedDate);
+          document.getElementById("date").value = date
+            .toISOString()
+            .split("T")[0];
+        }
       } catch (error) {
         console.error(error);
-        if (error.response && error.response.status === 401) {
-          this.$router.push("/signIn");
-          return;
-        }
+        if (error.response?.status === 401) router.push("/signIn");
         alert(error);
       }
-    },
-    async fetchPrevCalculation(event) {
+    };
+
+    const fetchPrevCalculation = async (event) => {
       const lang = localStorage.getItem("lang");
-      await this.fetchTableTitles("title.prevcalc");
+      await fetchTableTitles("title.prevcalc");
       const selectedDate = event.target.value;
-      const jwtToken = localStorage.getItem("jwtToken");
       try {
-        const response = await axios.get(
-          `${this.$config.backEndUrl}getPreviousCalculation`,
-          {
-            params: {
-              date: selectedDate,
-              lang: lang,
-            },
-            headers: {
-              Authorization: `Bearer ${jwtToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = response.data;
-        if (data.length) this.soldiers = Object.values(data);
-      } catch (error) {
-        console.error(error);
-        if (error.response && error.response.status === 401) {
-          this.$router.push("/signIn");
-          return;
-        }
-        alert(error);
-      }
-    },
-    async newServices() {
-      const jwtToken = localStorage.getItem("jwtToken");
-      try {
-        await axios.get(`${this.$config.backEndUrl}calc`, {
-          headers: {
-            Authorization: `Bearer ${jwtToken}`,
-            "Content-Type": "application/json",
-          },
+        const response = await axios.get("getPreviousCalculation", {
+          params: { date: selectedDate, lang },
         });
-        this.fetchSoldiers();
+        const data = response.data;
+        if (data.length) soldiers.value = Object.values(data);
       } catch (error) {
         console.error(error);
-        if (error.response && error.response.status === 401) {
-          this.$router.push("/signIn");
-          return;
-        }
+        if (error.response?.status === 401) router.push("/signIn");
         alert(error);
       }
-    },
-    async selectSoldier(soldier) {
-      const jwtToken = localStorage.getItem("jwtToken");
+    };
+
+    const newServices = async () => {
       try {
-        const response = await axios.post(
-          `${this.$config.backEndUrl}getSoldier`,
-          soldier,
-          {
-            headers: {
-              Authorization: `Bearer ${jwtToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const data = response.data;
-        localStorage.setItem("formData", JSON.stringify(data));
-        this.$router.push("/soldierForm");
+        await axios.get("calc");
+        fetchSoldiers();
+      } catch (error) {
+        console.error(error);
+        if (error.response?.status === 401) router.push("/signIn");
+        alert(error);
+      }
+    };
+
+    const selectSoldier = async (soldier) => {
+      const lang = localStorage.getItem("lang") || "en";
+      try {
+        const response = await axios.post("getSoldier", soldier, {
+          params: { lang },
+        });
+        localStorage.setItem("formData", JSON.stringify(response.data));
+        router.push("/soldierForm");
       } catch (error) {
         console.error("Request failed:", error);
-        if (error.response && error.response.status === 401) {
-          this.$router.push("/signIn");
-          return;
-        }
+        if (error.response?.status === 401) router.push("/signIn");
       }
-    },
-    logout() {
+    };
+
+    const logout = () => {
       localStorage.clear();
-      this.$router.push("/signIn");
-    },
-    navigateTo(path) {
-      this.$router.push(path);
-    },
+      router.push("/signIn");
+    };
+
+    const navigateTo = (path) => {
+      router.push(path);
+    };
+
+    return {
+      unitName,
+      soldiers,
+      tableHeaders,
+      titles,
+      locale,
+      changeLanguage,
+      fetchElementTitles,
+      getNameOfUnit,
+      fetchTableTitles,
+      fetchSoldiers,
+      fetchPrevCalculation,
+      newServices,
+      selectSoldier,
+      logout,
+      navigateTo,
+    };
   },
 };
 </script>

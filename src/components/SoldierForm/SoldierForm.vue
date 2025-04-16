@@ -39,60 +39,54 @@
 </template>
 
 <script>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
 
 export default {
-  data() {
-    return {
-      soldier: {
-        id: "",
-        name: "",
-        surname: "",
-        situation: "",
-        active: "",
-      },
-    };
-  },
-  mounted() {
-    const jwtToken = localStorage.getItem("jwtToken");
-    if (!jwtToken) {
-      this.$router.push("/signIn");
-      return;
-    }
-    const storedData = localStorage.getItem("formData");
-    if (storedData) {
-      this.soldier = JSON.parse(storedData);
+  setup() {
+    const router = useRouter();
 
-      localStorage.removeItem("formData");
-    }
-  },
-  methods: {
-    async saveSoldier() {
+    const soldier = ref({
+      id: "",
+      name: "",
+      surname: "",
+      situation: "",
+      active: "",
+    });
+
+    onMounted(() => {
       const jwtToken = localStorage.getItem("jwtToken");
+      if (!jwtToken) {
+        router.push("/signIn");
+        return;
+      }
+
+      const storedData = localStorage.getItem("formData");
+      if (storedData) {
+        soldier.value = JSON.parse(storedData);
+        localStorage.removeItem("formData");
+      }
+    });
+
+    const saveSoldier = async () => {
       try {
-        await axios.post(
-          `${this.$config.backEndUrl}changeSoldSituation`,
-          this.soldier,
-          {
-            headers: {
-              Authorization: `Bearer ${jwtToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        this.goToSoldierForm();
+        await axios.post("changeSoldSituation", soldier.value);
+        router.push("/home");
       } catch (error) {
         console.error(error);
-        if (error.response && error.response.status === 401) {
-          this.$router.push("/signIn");
-          return;
+        if (error.response?.status === 401) {
+          router.push("/signIn");
+        } else {
+          alert(error);
         }
-        alert(error);
       }
-    },
-    goToSoldierForm() {
-      this.$router.push("/home");
-    },
+    };
+
+    return {
+      soldier,
+      saveSoldier,
+    };
   },
 };
 </script>

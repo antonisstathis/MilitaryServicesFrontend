@@ -32,76 +32,77 @@
 </template>
 
 <script>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import axios from "axios";
 
 export default {
-  data() {
-    return {
-      unitName: "",
-      tableHeaders: [],
-      services: [],
-    };
-  },
-  mounted() {
-    this.getNameOfUnit();
-    this.fetchServicesOfUnit();
-  },
-  methods: {
-    async getNameOfUnit() {
+  setup() {
+    const router = useRouter();
+
+    const unitName = ref("");
+    const tableHeaders = ref([]);
+    const services = ref([]);
+
+    const getNameOfUnit = async () => {
       const jwtToken = localStorage.getItem("jwtToken");
       if (!jwtToken) {
-        this.$router.push("/signIn");
+        router.push("/signIn");
         return;
       }
+
       try {
-        const response = await axios.get(
-          `${this.$config.backEndUrl}getNameOfUnit`,
-          {
-            headers: {
-              Authorization: `Bearer ${jwtToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        this.unitName = await response.data;
+        const response = await axios.get("getNameOfUnit");
+        unitName.value = response.data;
       } catch (error) {
         console.error(error);
-        if (error.response && error.response.status === 401) {
-          this.$router.push("/signIn");
-          return;
+        if (error.response?.status === 401) {
+          router.push("/signIn");
+        } else {
+          alert(error);
         }
-        alert(error);
       }
-    },
-    async fetchServicesOfUnit() {
-      const jwtToken = localStorage.getItem("jwtToken", this.jwtToken);
+    };
+
+    const fetchServicesOfUnit = async () => {
+      const jwtToken = localStorage.getItem("jwtToken");
+      if (!jwtToken) {
+        router.push("/signIn");
+        return;
+      }
+
       try {
-        const response = await axios.get(
-          `${this.$config.backEndUrl}getServices`,
-          {
-            headers: {
-              Authorization: `Bearer ${jwtToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await axios.get("getServices");
         const data = response.data;
         if (data.length) {
-          this.tableHeaders = Object.keys(data[0]);
-          this.services = data;
+          tableHeaders.value = Object.keys(data[0]);
+          services.value = data;
         }
       } catch (error) {
         console.error(error);
-        if (error.response && error.response.status === 401) {
-          this.$router.push("/signIn");
-          return;
+        if (error.response?.status === 401) {
+          router.push("/signIn");
+        } else {
+          alert(error);
         }
-        alert(error);
       }
-    },
-    navigateTo(path) {
-      this.$router.push(path);
-    },
+    };
+
+    const navigateTo = (path) => {
+      router.push(path);
+    };
+
+    onMounted(() => {
+      getNameOfUnit();
+      fetchServicesOfUnit();
+    });
+
+    return {
+      unitName,
+      tableHeaders,
+      services,
+      navigateTo,
+    };
   },
 };
 </script>
