@@ -148,7 +148,7 @@ export default {
       tableHeaders.value = await fetchTableTitles("lastcalc");
       try {
         const response = await axios.get("getSoldiers", {});
-        const data = response.data;
+        const data = await setTableDataBasedOnLang(response.data);
         if (data.length) soldiers.value = Object.values(data);
 
         const dateValue = soldiers.value[0]?.date;
@@ -164,6 +164,81 @@ export default {
         if (error.response?.status === 401) router.push("/signIn");
         alert(error);
       }
+    };
+
+    const setTableDataBasedOnLang = async (soldiers) => {
+      const lang = localStorage.getItem("lang") || "en";
+      if (lang === "en") return soldiers;
+      const titlesFile = await import(`@/locales/${lang}.json`);
+
+      const keys = [
+        "soldierdto.active",
+        "soldierdto.freeofduty",
+        "soldierdto.armed",
+        "soldierdto.unarmed",
+        "soldierdto.armedser",
+        "soldierdto.unarmedser",
+      ];
+
+      const translations = keys.reduce((obj, key) => {
+        if (key in titlesFile) obj[key.slice(11)] = titlesFile[key];
+        return obj;
+      }, {});
+
+      /*
+      for (let i = 0; i < soldiers.length; i++) {
+        const soldier = soldiers[i];
+        const fields = ["situation", "active", "armed"];
+
+        for (let j = 0; j < fields.length; j++) {
+          const field = fields[j];
+          const value = soldier[field];
+          console.log(`Soldier[${i}] field: ${field}, value: "${value}"`);
+
+          if (field === "situation" && value === "armed") {
+            soldier[field] = translations["active"];
+          } else if (field === "situation" && value === "unarmed") {
+            soldier[field] = translations["freeofduty"];
+          } else if (field === "active" && value === "active") {
+            soldier[field] = translations["armed"];
+          } else if (field === "active" && value === "free of duty") {
+            soldier[field] = translations["unarmed"];
+          } else if (field === "armed" && value === "armed") {
+            soldier[field] = translations["armedser"];
+          } else if (field === "armed" && value === "unarmed") {
+            soldier[field] = translations["unarmedser"];
+          }
+        }
+      }
+      */
+
+      soldiers.forEach((soldier, i) => {
+        const fields = ["situation", "active", "armed"];
+
+        fields.forEach((field) => {
+          const value = soldier[field];
+          console.log(`Soldier[${i}] field: ${field}, value: "${value}"`);
+
+          soldier[field] =
+            field === "situation" && value === "armed"
+              ? translations["armed"]
+              : field === "situation" && value === "unarmed"
+              ? translations["unarmed"]
+              : field === "active" && value === "active"
+              ? translations["active"]
+              : field === "active" && value === "free of duty"
+              ? translations["freeofduty"]
+              : field === "armed" && value === "armed"
+              ? translations["armedser"]
+              : field === "armed" && value === "unarmed"
+              ? translations["unarmedser"]
+              : field === "armed" && value === "free of duty"
+              ? translations["freeofduty"]
+              : value; // default to original if no match
+        });
+      });
+
+      return soldiers;
     };
 
     const fetchPrevCalculation = async (event) => {
@@ -194,7 +269,7 @@ export default {
     };
 
     const selectSoldier = async (soldier) => {
-      const lang = localStorage.getItem("lang") || "en";
+      const lang = localStorage.getItem("lang");
       try {
         const response = await axios.post("getSoldier", soldier, {
           params: { lang },

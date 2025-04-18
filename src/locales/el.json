@@ -24,5 +24,12 @@
   "lastcalc.active": "Κατάσταση Στρατιώτη",
   "lastcalc.service": "Υπηρεσία",
   "lastcalc.date": "Ημερομηνία",
-  "lastcalc.armed": "Κατηγορία Υπηρεσίας"
+  "lastcalc.armed": "Κατηγορία Υπηρεσίας",
+
+  "soldierdto.active": "ενεργός",
+  "soldierdto.freeofduty": "ελεύθερος υπηρεσίας",
+  "soldierdto.armed": "ένοπλος",
+  "soldierdto.unarmed": "άοπλος",
+  "soldierdto.armedser": "ένοπλη",
+  "soldierdto.unarmedser": "άοπλη"
 }
