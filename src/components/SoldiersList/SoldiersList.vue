@@ -178,6 +178,8 @@ export default {
         "soldierdto.unarmed",
         "soldierdto.armedser",
         "soldierdto.unarmedser",
+        "soldierdto.onduty",
+        "soldierdto.discharged",
       ];
 
       const translations = keys.reduce((obj, key) => {
@@ -185,39 +187,13 @@ export default {
         return obj;
       }, {});
 
-      /*
-      for (let i = 0; i < soldiers.length; i++) {
-        const soldier = soldiers[i];
-        const fields = ["situation", "active", "armed"];
-
-        for (let j = 0; j < fields.length; j++) {
-          const field = fields[j];
-          const value = soldier[field];
-          console.log(`Soldier[${i}] field: ${field}, value: "${value}"`);
-
-          if (field === "situation" && value === "armed") {
-            soldier[field] = translations["active"];
-          } else if (field === "situation" && value === "unarmed") {
-            soldier[field] = translations["freeofduty"];
-          } else if (field === "active" && value === "active") {
-            soldier[field] = translations["armed"];
-          } else if (field === "active" && value === "free of duty") {
-            soldier[field] = translations["unarmed"];
-          } else if (field === "armed" && value === "armed") {
-            soldier[field] = translations["armedser"];
-          } else if (field === "armed" && value === "unarmed") {
-            soldier[field] = translations["unarmedser"];
-          }
-        }
-      }
-      */
-
-      soldiers.forEach((soldier, i) => {
-        const fields = ["situation", "active", "armed"];
+      soldiers.forEach((soldier) => {
+        const fields = ["situation", "active", "armed", "discharged"];
 
         fields.forEach((field) => {
           const value = soldier[field];
-          console.log(`Soldier[${i}] field: ${field}, value: "${value}"`);
+
+          if (!(field in soldier)) return;
 
           soldier[field] =
             field === "situation" && value === "armed"
@@ -234,6 +210,10 @@ export default {
               ? translations["unarmedser"]
               : field === "armed" && value === "free of duty"
               ? translations["freeofduty"]
+              : field === "discharged" && value === "in operation"
+              ? translations["onduty"]
+              : field === "discharged" && value === "discharged"
+              ? translations["discharged"]
               : value; // default to original if no match
         });
       });
@@ -244,12 +224,15 @@ export default {
     const fetchPrevCalculation = async (event) => {
       tableHeaders.value = await fetchTableTitles("prevcalc");
       const selectedDate = event.target.value;
+      localStorage.setItem("selectedDate", selectedDate);
       try {
         const response = await axios.get("getPreviousCalculation", {
           params: { date: selectedDate },
         });
-        const data = response.data;
+        const data = await setTableDataBasedOnLang(response.data);
+        console.log(data);
         if (data.length) soldiers.value = Object.values(data);
+        console.log(soldiers.value);
       } catch (error) {
         console.error(error);
         if (error.response?.status === 401) router.push("/signIn");

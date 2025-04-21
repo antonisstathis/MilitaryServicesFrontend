@@ -16,7 +16,7 @@
   "prevcalc.service": "Υπηρεσία",
   "prevcalc.date": "Ημερομηνία",
   "prevcalc.armed": "Κατηγορία Υπηρεσίας",
-  "prevcalc.fired": "Διαθεσιμότητα",
+  "prevcalc.dutystatus": "Διαθεσιμότητα",
 
   "lastcalc.name": "Όνομα",
   "lastcalc.surname": "Επώνυμο",
@@ -31,5 +31,7 @@
   "soldierdto.armed": "ένοπλος",
   "soldierdto.unarmed": "άοπλος",
   "soldierdto.armedser": "ένοπλη",
-  "soldierdto.unarmedser": "άοπλη"
+  "soldierdto.unarmedser": "άοπλη",
+  "soldierdto.onduty": "εν υπηρεσία",
+  "soldierdto.discharged": "αποστρατευμένος"
 }

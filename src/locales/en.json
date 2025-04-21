@@ -16,7 +16,7 @@
   "prevcalc.service": "Service",
   "prevcalc.date": "Date",
   "prevcalc.armed": "Armed",
-  "prevcalc.fired": "Fired",
+  "prevcalc.dutystatus": "Duty Status",
 
   "lastcalc.name": "Name",
   "lastcalc.surname": "Surname",
