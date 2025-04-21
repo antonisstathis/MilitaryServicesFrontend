@@ -89,6 +89,8 @@ export default {
     const tableHeaders = ref([]);
     const titles = ref({});
     const locale = ref(localStorage.getItem("lang") || "en");
+    let lastDate;
+    let selectedDate;
 
     // Lifecycle hooks
     onMounted(async () => {
@@ -100,7 +102,10 @@ export default {
     // Methods
     const changeLanguage = async () => {
       localStorage.setItem("lang", locale.value);
-      fetchSoldiers();
+
+      if (lastDate && selectedDate && !isSameDay(selectedDate, lastDate))
+        fetchPrevCalculationData(selectedDate);
+      else fetchSoldiers();
       titles.value = await fetchElementTitles();
     };
 
@@ -155,6 +160,8 @@ export default {
         if (dateValue) {
           const formattedDate = dateValue.split("-").reverse().join("-");
           const date = new Date(formattedDate);
+          lastDate = date;
+          selectedDate = date;
           document.getElementById("date").value = date
             .toISOString()
             .split("T")[0];
@@ -221,23 +228,33 @@ export default {
       return soldiers;
     };
 
-    const fetchPrevCalculation = async (event) => {
+    const fetchPrevCalculation = (event) => {
+      selectedDate = new Date(event.target.value);
+      changeLanguage();
+      //fetchPrevCalculationData(selectedDate);
+    };
+
+    const fetchPrevCalculationData = async (selectedDate) => {
       tableHeaders.value = await fetchTableTitles("prevcalc");
-      const selectedDate = event.target.value;
-      localStorage.setItem("selectedDate", selectedDate);
       try {
         const response = await axios.get("getPreviousCalculation", {
           params: { date: selectedDate },
         });
         const data = await setTableDataBasedOnLang(response.data);
-        console.log(data);
         if (data.length) soldiers.value = Object.values(data);
-        console.log(soldiers.value);
       } catch (error) {
         console.error(error);
         if (error.response?.status === 401) router.push("/signIn");
         alert(error);
       }
+    };
+
+    const isSameDay = (date1, date2) => {
+      return (
+        date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate()
+      );
     };
 
     const newServices = async () => {
