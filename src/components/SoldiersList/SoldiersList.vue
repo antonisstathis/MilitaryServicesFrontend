@@ -87,17 +87,30 @@ export default {
     const tableHeaders = ref([]);
     const titles = ref({});
     const locale = ref(localStorage.getItem("lang") || "en");
+    let firstDate;
     let lastDate;
     let selectedDate;
 
     // Lifecycle hooks
     onMounted(async () => {
       getNameOfUnit();
+      getFirstDateCalc();
       fetchSoldiers();
       titles.value = await fetchElementTitles();
     });
 
     // Methods
+
+    const getFirstDateCalc = async () => {
+      try {
+        const response = await axios.get("getFirstCalcDate");
+        firstDate = new Date(response.data);
+      } catch (error) {
+        console.error(error);
+        if (error.response?.status === 401) router.push("/signIn");
+      }
+    };
+
     const changeLanguage = async () => {
       localStorage.setItem("lang", locale.value);
 
@@ -228,8 +241,13 @@ export default {
 
     const fetchPrevCalculation = (event) => {
       selectedDate = new Date(event.target.value);
+      if (selectedDate < firstDate || selectedDate > lastDate) {
+        alert(
+          `The date you selected is out of this period (${firstDate},${lastDate}.)`
+        );
+        return;
+      }
       changeLanguage();
-      //fetchPrevCalculationData(selectedDate);
     };
 
     const fetchPrevCalculationData = async (selectedDate) => {
