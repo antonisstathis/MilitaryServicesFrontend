@@ -76,8 +76,6 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
-//import { useI18n } from "vue-i18n";
-//const { locale } = useI18n();
 
 export default {
   setup() {
