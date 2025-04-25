@@ -39,6 +39,8 @@
           <option>Gate Guards</option>
           <option>Gate Shell Assistant</option>
           <option>Patrol Guards</option>
+          <option>Guard Post</option>
+          <option>Outposts</option>
           <option>Cameras</option>
           <option>Cabin Guard</option>
         </select>
