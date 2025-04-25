@@ -1,9 +1,7 @@
 <template>
   <div id="header">
     <h1>{{ unitName }}</h1>
-    <button class="primary-btn" @click="navigateTo('/home')">
-      Add Services
-    </button>
+    <button class="primary-btn" @click="showPopup = true">Add Services</button>
     <button class="primary-btn" @click="deleteServices">Delete Services</button>
     <button class="primary-btn" @click="navigateTo('/home')">Back</button>
   </div>
@@ -29,6 +27,49 @@
       </tbody>
     </table>
   </div>
+
+  <div v-if="showPopup" class="popup-overlay">
+    <div class="popup-content">
+      <h3>Select Services</h3>
+
+      <label>
+        Service Category:
+        <select v-model="selectedService">
+          <option disabled value="">Please select</option>
+          <option>Gate Guards</option>
+          <option>Gate Shell Assistant</option>
+          <option>Patrol Guards</option>
+          <option>Cameras</option>
+          <option>Cabin Guard</option>
+        </select>
+      </label>
+
+      <label>
+        Number Of Guards:
+        <select v-model="selectedNumberOfGuards">
+          <option disabled value="">Please select</option>
+          <option>1</option>
+          <option>2</option>
+        </select>
+      </label>
+
+      <label>
+        Select Shifts:
+        <select v-model="selectedNumberOfShifts">
+          <option disabled value="">Please select</option>
+          <option>1</option>
+          <option>2</option>
+          <option>3</option>
+          <option>4</option>
+        </select>
+      </label>
+
+      <div class="popup-buttons">
+        <button class="primary-btn" @click="saveServices">Save</button>
+        <button class="primary-btn" @click="showPopup = false">Cancel</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -43,6 +84,14 @@ export default {
     const unitName = ref("");
     const tableHeaders = ref([]);
     const services = ref([]);
+    const showPopup = ref(false);
+    const selectedService = ref("");
+    const selectedNumberOfGuards = ref("");
+    const selectedNumberOfShifts = ref("");
+
+    const saveServices = () => {
+      showPopup.value = false;
+    };
 
     const getNameOfUnit = async () => {
       const jwtToken = localStorage.getItem("jwtToken");
@@ -102,6 +151,11 @@ export default {
       tableHeaders,
       services,
       navigateTo,
+      showPopup,
+      selectedService,
+      selectedNumberOfGuards,
+      selectedNumberOfShifts,
+      saveServices,
     };
   },
 };
@@ -179,5 +233,48 @@ tr:nth-child(even) {
 
 tr:hover {
   background-color: #e5e7eb; /* Slightly Darker Gray */
+}
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.popup-content {
+  background-color: #fff;
+  padding: 20px;
+  width: 300px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.popup-content h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.popup-content label {
+  display: block;
+  margin: 10px 0;
+}
+
+.popup-content select {
+  width: 100%;
+  padding: 5px;
+  margin-top: 5px;
+}
+
+.popup-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 </style>
