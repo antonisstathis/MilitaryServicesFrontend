@@ -52,6 +52,9 @@
           <option disabled value="">Please select</option>
           <option>1</option>
           <option>2</option>
+          <option>3</option>
+          <option>4</option>
+          <option>5</option>
         </select>
       </label>
 
@@ -91,7 +94,22 @@ export default {
     const selectedNumberOfGuards = ref("");
     const selectedNumberOfShifts = ref("");
 
-    const saveServices = () => {
+    const saveServices = async () => {
+      try {
+        const payload = {
+          service: selectedService.value,
+          numberOfGuards: selectedNumberOfGuards.value,
+          numberOfShifts: selectedNumberOfShifts.value,
+        };
+
+        await axios.post("saveNewServices", payload);
+        showPopup.value = false;
+      } catch (error) {
+        if (error.response)
+          alert("You are not authorized to add or delete services.");
+        console.error("Request failed:", error);
+        if (error.response?.status === 401) router.push("/signIn");
+      }
       showPopup.value = false;
     };
 

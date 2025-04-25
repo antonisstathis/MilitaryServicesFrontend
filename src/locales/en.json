@@ -9,6 +9,7 @@
   "element.logout": "Logout",
 
   "prevcalc.registration": "Registration Number",
+  "prevcalc.company": "Company",
   "prevcalc.name": "Name",
   "prevcalc.surname": "Surname",
   "prevcalc.situation": "Situation",
@@ -18,6 +19,7 @@
   "prevcalc.armed": "Armed",
   "prevcalc.dutystatus": "Duty Status",
 
+  "lastcalc.company": "Company",
   "lastcalc.name": "Name",
   "lastcalc.surname": "Surname",
   "lastcalc.situation": "Situation",

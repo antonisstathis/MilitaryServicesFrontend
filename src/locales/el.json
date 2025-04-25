@@ -9,6 +9,7 @@
   "element.logout": "Αποσύνδεση",
 
   "prevcalc.registration": "ΑΣΜ",
+  "prevcalc.company": "Λόχος",
   "prevcalc.name": "Όνομα",
   "prevcalc.surname": "Επώνυμο",
   "prevcalc.situation": "Ικανότητα",
@@ -18,6 +19,7 @@
   "prevcalc.armed": "Κατηγορία Υπηρεσίας",
   "prevcalc.dutystatus": "Διαθεσιμότητα",
 
+  "lastcalc.company": "Λόχος",
   "lastcalc.name": "Όνομα",
   "lastcalc.surname": "Επώνυμο",
   "lastcalc.situation": "Ικανότητα",
