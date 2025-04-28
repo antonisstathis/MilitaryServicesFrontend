@@ -1,16 +1,26 @@
 <template>
   <div id="header">
     <h1>{{ unitName }}</h1>
-    <button class="primary-btn" @click="showPopup = true">Add Services</button>
-    <button class="primary-btn" @click="deleteServices">Delete Services</button>
-    <button class="primary-btn" @click="navigateTo('/home')">Back</button>
+    <button class="primary-btn" @click="showPopup = true">
+      {{ titles.addservices }}
+    </button>
+    <button class="primary-btn" @click="deleteSelectedServices">
+      {{ titles.deleteservices }}
+    </button>
+    <button class="primary-btn" @click="navigateTo('/home')">
+      {{ titles.back }}
+    </button>
   </div>
   <div id="table">
     <table>
       <thead>
         <tr>
-          <th v-for="key in tableHeaders.slice(1)" :key="key">
-            {{ key }}
+          <th
+            v-for="(title, index) in tableHeaders"
+            :key="index"
+            :title="title"
+          >
+            {{ title }}
           </th>
         </tr>
       </thead>
@@ -18,10 +28,16 @@
         <tr
           v-for="service in services"
           :key="service.id"
-          @click="selectSoldier(service)"
+          @click="toggleSelection(service)"
+          :class="{ 'selected-row': selectedServices.includes(service) }"
         >
-          <td v-for="key in tableHeaders.slice(1)" :key="key">
-            {{ service[key] }}
+          <td
+            v-for="[key, value] in Object.entries(service).filter(
+              ([key]) => key !== 'id'
+            )"
+            :key="key"
+          >
+            {{ value }}
           </td>
         </tr>
       </tbody>
@@ -33,17 +49,35 @@
       <h3>Select Services</h3>
 
       <label>
-        Service Category:
-        <select v-model="selectedService">
+        Name Of Service:
+        <input
+          type="text"
+          v-model="nameOfService"
+          placeholder="Enter name of service"
+        />
+      </label>
+
+      <label>
+        Armed:
+        <select v-model="armed">
           <option disabled value="">Please select</option>
-          <option>Gate Guards</option>
-          <option>Gate Shell Assistant</option>
-          <option>Patrol Guards</option>
-          <option>Guard Post</option>
-          <option>Outposts</option>
-          <option>Cameras</option>
-          <option>Cabin Guard</option>
+          <option>armed</option>
+          <option>unarmed</option>
         </select>
+      </label>
+
+      <label>
+        Description:
+        <input
+          type="text"
+          v-model="description"
+          placeholder="Enter description"
+        />
+      </label>
+
+      <label>
+        Shift:
+        <input type="text" v-model="shift" placeholder="Enter shift" />
       </label>
 
       <label>
@@ -55,17 +89,6 @@
           <option>3</option>
           <option>4</option>
           <option>5</option>
-        </select>
-      </label>
-
-      <label>
-        Select Shifts:
-        <select v-model="selectedNumberOfShifts">
-          <option disabled value="">Please select</option>
-          <option>1</option>
-          <option>2</option>
-          <option>3</option>
-          <option>4</option>
         </select>
       </label>
 
@@ -90,16 +113,69 @@ export default {
     const tableHeaders = ref([]);
     const services = ref([]);
     const showPopup = ref(false);
-    const selectedService = ref("");
+    const nameOfService = ref("");
+    const armed = ref("");
+    const description = ref("");
+    const shift = ref("");
     const selectedNumberOfGuards = ref("");
-    const selectedNumberOfShifts = ref("");
+    const selectedServices = ref([]);
+    const titles = ref({});
+
+    onMounted(async () => {
+      getNameOfUnit();
+      fetchServicesOfUnit();
+      titles.value = await fetchElementTitles();
+    });
+
+    const fetchElementTitles = async () => {
+      const lang = localStorage.getItem("lang") || "en";
+      const titlesFile = await import(`@/locales/${lang}.json`);
+      const titles = titlesFile.default;
+
+      return Object.fromEntries(
+        Object.entries(titles)
+          .filter(([key]) => key.startsWith("serofunitelement."))
+          .map(([key, value]) => [key.slice("serofunitelement.".length), value])
+      );
+    };
+
+    const toggleSelection = (service) => {
+      const index = selectedServices.value.indexOf(service);
+      if (index === -1) {
+        selectedServices.value.push(service);
+      } else {
+        selectedServices.value.splice(index, 1);
+      }
+    };
+
+    const deleteSelectedServices = async () => {
+      try {
+        if (selectedServices.value.length === 0) {
+          alert("No services selected!");
+          return;
+        }
+
+        const idsToDelete = selectedServices.value.map((service) => service.id);
+        await axios.post("deleteServices", { ids: idsToDelete });
+
+        services.value = services.value.filter(
+          (service) => !idsToDelete.includes(service.id)
+        );
+        selectedServices.value = [];
+      } catch (error) {
+        console.error("Failed to delete services:", error);
+        alert("An error occurred while deleting services.");
+      }
+    };
 
     const saveServices = async () => {
       try {
         const payload = {
-          service: selectedService.value,
-          numberOfGuards: selectedNumberOfGuards.value,
-          numberOfShifts: selectedNumberOfShifts.value,
+          nameOfService: nameOfService.value,
+          armed: armed.value,
+          description: description.value,
+          shift: shift.value,
+          selectedNumberOfGuards: selectedNumberOfGuards.value,
         };
 
         await axios.post("saveNewServices", payload);
@@ -133,7 +209,27 @@ export default {
       }
     };
 
+    const fetchTableTitles = async (prefix) => {
+      const lang = localStorage.getItem("lang") || "en";
+
+      try {
+        const titlesFile = await import(`@/locales/${lang}.json`);
+        const allTitles = titlesFile.default;
+
+        return Object.fromEntries(
+          Object.entries(allTitles).filter(([key]) =>
+            key.startsWith(prefix + ".")
+          )
+        );
+      } catch (error) {
+        console.error(`Could not load titles for language '${lang}':`, error);
+        return {};
+      }
+    };
+
     const fetchServicesOfUnit = async () => {
+      tableHeaders.value = await fetchTableTitles("serofunit");
+      console.log(tableHeaders.value);
       const jwtToken = localStorage.getItem("jwtToken");
       if (!jwtToken) {
         router.push("/signIn");
@@ -144,7 +240,6 @@ export default {
         const response = await axios.get("getServices");
         const data = response.data;
         if (data.length) {
-          tableHeaders.value = Object.keys(data[0]);
           services.value = data;
         }
       } catch (error) {
@@ -161,21 +256,23 @@ export default {
       router.push(path);
     };
 
-    onMounted(() => {
-      getNameOfUnit();
-      fetchServicesOfUnit();
-    });
-
     return {
       unitName,
       tableHeaders,
       services,
       navigateTo,
       showPopup,
-      selectedService,
-      selectedNumberOfGuards,
-      selectedNumberOfShifts,
       saveServices,
+      nameOfService,
+      armed,
+      description,
+      shift,
+      selectedNumberOfGuards,
+      selectedServices,
+      toggleSelection,
+      deleteSelectedServices,
+      fetchElementTitles,
+      titles,
     };
   },
 };
@@ -255,6 +352,14 @@ tr:hover {
   background-color: #e5e7eb; /* Slightly Darker Gray */
 }
 
+.selected-row {
+  background-color: #e0f2fe !important; /* Light blue background when selected */
+}
+
+table tr:hover {
+  cursor: pointer;
+}
+
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -296,5 +401,25 @@ tr:hover {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
+}
+
+.popup-content input,
+.popup-content select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.3s;
+}
+
+.popup-content input:focus,
+.popup-content select:focus {
+  border-color: #22c55e; /* match your primary color */
+  outline: none;
 }
 </style>

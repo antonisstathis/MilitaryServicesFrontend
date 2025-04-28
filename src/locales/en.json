@@ -8,6 +8,14 @@
   "element.lastservices": "Last Services",
   "element.logout": "Logout",
 
+  "serofunitelement.addservices": "Add Services",
+  "serofunitelement.deleteservices": "Delete Services",
+  "serofunitelement.back": "Back",
+  "serofunit.service": "Service",
+  "serofunit.Armed": "Armed",
+  "serofunit.Description": "Description",
+  "serofunit.Shift": "Shift",
+
   "prevcalc.registration": "Registration Number",
   "prevcalc.company": "Company",
   "prevcalc.name": "Name",

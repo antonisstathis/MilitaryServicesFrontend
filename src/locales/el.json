@@ -8,6 +8,14 @@
   "element.lastservices": "Τελευταίες υπηρεσίες",
   "element.logout": "Αποσύνδεση",
 
+  "serofunitelement.addservices": "Προσθήκη Υπηρεσίας",
+  "serofunitelement.deleteservices": "Διαγραφή Υπηρεσιών",
+  "serofunitelement.back": "Επιστροφή",
+  "serofunit.service": "Υπηρεσία",
+  "serofunit.Armed": "Κατηγορία Υπηρεσίας",
+  "serofunit.Description": "Περιγραφή",
+  "serofunit.Shift": "Ώρες",
+
   "prevcalc.registration": "ΑΣΜ",
   "prevcalc.company": "Λόχος",
   "prevcalc.name": "Όνομα",
