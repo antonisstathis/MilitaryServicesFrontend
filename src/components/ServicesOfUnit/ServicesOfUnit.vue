@@ -180,6 +180,7 @@ export default {
 
         await axios.post("saveNewServices", payload);
         showPopup.value = false;
+        fetchServicesOfUnit();
       } catch (error) {
         if (error.response)
           alert("You are not authorized to add or delete services.");
