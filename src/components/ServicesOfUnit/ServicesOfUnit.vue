@@ -183,8 +183,6 @@ export default {
         fetchServicesOfUnit();
       } catch (error) {
         if (error.response) {
-          console.log(error);
-          console.log(error.response);
           alert(
             error.response.data ||
               "You are not authorized to add or delete services."
