@@ -182,8 +182,14 @@ export default {
         showPopup.value = false;
         fetchServicesOfUnit();
       } catch (error) {
-        if (error.response)
-          alert("You are not authorized to add or delete services.");
+        if (error.response) {
+          console.log(error);
+          console.log(error.response);
+          alert(
+            error.response.data ||
+              "You are not authorized to add or delete services."
+          );
+        }
         console.error("Request failed:", error);
         if (error.response?.status === 401) router.push("/signIn");
       }
@@ -230,7 +236,6 @@ export default {
 
     const fetchServicesOfUnit = async () => {
       tableHeaders.value = await fetchTableTitles("serofunit");
-      console.log(tableHeaders.value);
       const jwtToken = localStorage.getItem("jwtToken");
       if (!jwtToken) {
         router.push("/signIn");
