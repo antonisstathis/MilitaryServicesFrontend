@@ -7,9 +7,13 @@
     <button class="primary-btn" @click="deleteSelectedServices">
       {{ titles.deleteservices }}
     </button>
+    <button class="primary-btn" @click="fetchServicesOfUnit">
+      {{ titles.currentservices }}
+    </button>
     <button class="primary-btn" @click="navigateTo('/home')">
       {{ titles.back }}
     </button>
+    <input type="date" id="date" @change="fetchServicesOfUnit($event)" />
   </div>
   <div id="table">
     <table>
@@ -232,16 +236,20 @@ export default {
       }
     };
 
-    const fetchServicesOfUnit = async () => {
+    const fetchServicesOfUnit = async (event = null) => {
       tableHeaders.value = await fetchTableTitles("serofunit");
       const jwtToken = localStorage.getItem("jwtToken");
+
+      const selectedDate =
+        event && event.type !== "click" ? new Date(event.target.value) : null;
       if (!jwtToken) {
         router.push("/signIn");
         return;
       }
-
       try {
-        const response = await axios.get("getServices");
+        const response = await axios.get("getServices", {
+          params: { date: selectedDate },
+        });
         const data = response.data;
         if (data.length) {
           services.value = data;
@@ -276,6 +284,7 @@ export default {
       toggleSelection,
       deleteSelectedServices,
       fetchElementTitles,
+      fetchServicesOfUnit,
       titles,
     };
   },
@@ -362,6 +371,22 @@ tr:hover {
 
 table tr:hover {
   cursor: pointer;
+}
+
+input[type="date"] {
+  padding: 0.6rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 1rem;
+  width: 100%;
+  max-width: 300px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="date"]:focus {
+  border-color: #3b82f6; /* blue-500 */
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+  outline: none;
 }
 
 .popup-overlay {

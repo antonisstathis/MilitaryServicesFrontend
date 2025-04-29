@@ -10,6 +10,7 @@
 
   "serofunitelement.addservices": "Προσθήκη Υπηρεσίας",
   "serofunitelement.deleteservices": "Διαγραφή Υπηρεσιών",
+  "serofunitelement.currentservices": "Τρέχουσες Υπηρεσίες",
   "serofunitelement.back": "Επιστροφή",
   "serofunit.service": "Υπηρεσία",
   "serofunit.Armed": "Κατηγορία Υπηρεσίας",

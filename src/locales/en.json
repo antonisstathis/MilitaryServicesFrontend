@@ -10,6 +10,7 @@
 
   "serofunitelement.addservices": "Add Services",
   "serofunitelement.deleteservices": "Delete Services",
+  "serofunitelement.currentservices": "Current Services",
   "serofunitelement.back": "Back",
   "serofunit.service": "Service",
   "serofunit.Armed": "Armed",
