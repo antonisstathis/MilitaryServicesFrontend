@@ -188,9 +188,10 @@ export default {
           selectedNumberOfGuards: selectedNumberOfGuards.value,
         };
 
-        await axios.post("saveNewServices", payload);
+        const response = await axios.post("saveNewServices", payload);
         showPopup.value = false;
         fetchServicesOfUnit();
+        alert(response.data);
       } catch (error) {
         if (error.response) {
           alert(
