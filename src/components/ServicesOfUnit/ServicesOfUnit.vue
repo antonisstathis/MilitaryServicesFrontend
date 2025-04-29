@@ -13,7 +13,12 @@
     <button class="primary-btn" @click="navigateTo('/home')">
       {{ titles.back }}
     </button>
-    <input type="date" id="date" @change="fetchServicesOfUnit($event)" />
+    <input
+      type="date"
+      id="date"
+      v-model="selectedDate"
+      @change="fetchServicesOfUnit($event)"
+    />
   </div>
   <div id="table">
     <table>
@@ -124,6 +129,7 @@ export default {
     const selectedNumberOfGuards = ref("");
     const selectedServices = ref([]);
     const titles = ref({});
+    const selectedDate = ref("");
 
     onMounted(async () => {
       getNameOfUnit();
@@ -240,15 +246,21 @@ export default {
       tableHeaders.value = await fetchTableTitles("serofunit");
       const jwtToken = localStorage.getItem("jwtToken");
 
-      const selectedDate =
+      const selDate =
         event && event.type !== "click" ? new Date(event.target.value) : null;
+
+      selectedDate.value =
+        event && event.type !== "click"
+          ? selectedDate.value
+          : new Date().toISOString().split("T")[0];
+
       if (!jwtToken) {
         router.push("/signIn");
         return;
       }
       try {
         const response = await axios.get("getServices", {
-          params: { date: selectedDate },
+          params: { date: selDate },
         });
         const data = response.data;
         if (data.length) {
@@ -286,6 +298,7 @@ export default {
       fetchElementTitles,
       fetchServicesOfUnit,
       titles,
+      selectedDate,
     };
   },
 };
