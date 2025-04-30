@@ -176,6 +176,7 @@ export default {
       try {
         const response = await axios.get("getSoldiers", {});
         const data = await setTableDataBasedOnLang(response.data);
+        localStorage.setItem("selectedDate", lastDate);
         if (data.length) soldiers.value = Object.values(data);
 
         const dateValue = soldiers.value[0]?.date;
@@ -250,7 +251,12 @@ export default {
     const fetchPrevCalculation = (event) => {
       selectedDate.value = new Date(event.target.value);
       if (selectedDate.value < firstDate || selectedDate.value > lastDate) {
-        selectedDate.value = lastDate.toISOString().split("T")[0];
+        const lastSelectedDate = localStorage.getItem("selectedDate");
+        const dateToSet =
+          typeof lastSelectedDate === "string"
+            ? new Date(lastSelectedDate)
+            : lastSelectedDate;
+        selectedDate.value = dateToSet.toISOString().split("T")[0];
         messageStore.show(
           `The date you selected is out of this period (${firstDate},${lastDate}.)`,
           "error",
@@ -263,6 +269,7 @@ export default {
 
     const fetchPrevCalculationData = async (selDate) => {
       tableHeaders.value = await fetchTableTitles("prevcalc");
+      localStorage.setItem("selectedDate", selDate);
       try {
         selectedDate.value =
           typeof selDate === "string"
