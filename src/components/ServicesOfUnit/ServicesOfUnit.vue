@@ -163,7 +163,7 @@ export default {
     const deleteSelectedServices = async () => {
       try {
         if (selectedServices.value.length === 0) {
-          alert("No services selected!");
+          messageStore.show("No services selected.", "error");
           return;
         }
 

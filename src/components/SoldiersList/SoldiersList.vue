@@ -76,10 +76,12 @@
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
+import { useMessageStore } from "@/stores/useMessageStore";
 
 export default {
   setup() {
     const router = useRouter();
+    const messageStore = useMessageStore();
 
     // State variables
     const unitName = ref("");
@@ -180,7 +182,7 @@ export default {
       } catch (error) {
         console.error(error);
         if (error.response?.status === 401) router.push("/signIn");
-        alert(error.response.data);
+        messageStore.show(error.response.data, "error");
       }
     };
 
@@ -242,8 +244,10 @@ export default {
     const fetchPrevCalculation = (event) => {
       selectedDate = new Date(event.target.value);
       if (selectedDate < firstDate || selectedDate > lastDate) {
-        alert(
-          `The date you selected is out of this period (${firstDate},${lastDate}.)`
+        messageStore.show(
+          `The date you selected is out of this period (${firstDate},${lastDate}.)`,
+          "error",
+          3300
         );
         return;
       }
@@ -261,7 +265,7 @@ export default {
       } catch (error) {
         console.error(error);
         if (error.response?.status === 401) router.push("/signIn");
-        alert(error.response.data);
+        messageStore.show(error.response.data, "error");
       }
     };
 
@@ -275,12 +279,13 @@ export default {
 
     const newServices = async () => {
       try {
-        await axios.get("calc");
+        const response = await axios.get("calc");
         fetchSoldiers();
+        messageStore.show(response.data, "success", 3000);
       } catch (error) {
         console.error(error);
         if (error.response?.status === 401) router.push("/signIn");
-        alert(error.response.data);
+        messageStore.show(error.response.data, "error");
       }
     };
 
