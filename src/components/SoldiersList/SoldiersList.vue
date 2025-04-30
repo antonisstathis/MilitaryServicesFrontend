@@ -33,7 +33,12 @@
       <button class="primary-btn" @click="fetchSoldiers">
         {{ titles.lastservices }}
       </button>
-      <input type="date" id="date" @change="fetchPrevCalculation($event)" />
+      <input
+        type="date"
+        id="date"
+        v-model="selectedDate"
+        @change="fetchPrevCalculation($event)"
+      />
       <button class="logout-btn" @click="logout">
         {{ titles.logout }}
       </button>
@@ -91,7 +96,7 @@ export default {
     const locale = ref(localStorage.getItem("lang") || "en");
     let firstDate;
     let lastDate;
-    let selectedDate;
+    const selectedDate = ref("");
 
     // Lifecycle hooks
     onMounted(async () => {
@@ -116,8 +121,12 @@ export default {
     const changeLanguage = async () => {
       localStorage.setItem("lang", locale.value);
 
-      if (lastDate && selectedDate && !isSameDay(selectedDate, lastDate))
-        fetchPrevCalculationData(selectedDate);
+      const selDate =
+        typeof selectedDate.value === "string"
+          ? new Date(selectedDate.value)
+          : selectedDate.value;
+      if (lastDate && selDate && !isSameDay(selDate, lastDate))
+        fetchPrevCalculationData(selectedDate.value);
       else fetchSoldiers();
       titles.value = await fetchElementTitles();
     };
@@ -174,10 +183,7 @@ export default {
           const formattedDate = dateValue.split("-").reverse().join("-");
           const date = new Date(formattedDate);
           lastDate = date;
-          selectedDate = date;
-          document.getElementById("date").value = date
-            .toISOString()
-            .split("T")[0];
+          selectedDate.value = date.toISOString().split("T")[0];
         }
       } catch (error) {
         console.error(error);
@@ -242,8 +248,9 @@ export default {
     };
 
     const fetchPrevCalculation = (event) => {
-      selectedDate = new Date(event.target.value);
-      if (selectedDate < firstDate || selectedDate > lastDate) {
+      selectedDate.value = new Date(event.target.value);
+      if (selectedDate.value < firstDate || selectedDate.value > lastDate) {
+        selectedDate.value = lastDate.toISOString().split("T")[0];
         messageStore.show(
           `The date you selected is out of this period (${firstDate},${lastDate}.)`,
           "error",
@@ -254,11 +261,15 @@ export default {
       changeLanguage();
     };
 
-    const fetchPrevCalculationData = async (selectedDate) => {
+    const fetchPrevCalculationData = async (selDate) => {
       tableHeaders.value = await fetchTableTitles("prevcalc");
       try {
+        selectedDate.value =
+          typeof selDate === "string"
+            ? selDate
+            : selDate.toISOString().split("T")[0];
         const response = await axios.get("getPreviousCalculation", {
-          params: { date: selectedDate },
+          params: { date: selDate },
         });
         const data = await setTableDataBasedOnLang(response.data);
         if (data.length) soldiers.value = Object.values(data);
@@ -328,6 +339,7 @@ export default {
       selectSoldier,
       logout,
       navigateTo,
+      selectedDate,
     };
   },
 };
