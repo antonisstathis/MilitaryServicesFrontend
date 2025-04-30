@@ -107,28 +107,14 @@ export default {
     });
 
     // Methods
-
-    const getFirstDateCalc = async () => {
+    const getNameOfUnit = async () => {
       try {
-        const response = await axios.get("getFirstCalcDate");
-        firstDate = new Date(response.data);
+        const response = await axios.get("getNameOfUnit");
+        unitName.value = response.data;
       } catch (error) {
         console.error(error);
         if (error.response?.status === 401) router.push("/signIn");
       }
-    };
-
-    const changeLanguage = async () => {
-      localStorage.setItem("lang", locale.value);
-
-      const selDate =
-        typeof selectedDate.value === "string"
-          ? new Date(selectedDate.value)
-          : selectedDate.value;
-      if (lastDate && selDate && !isSameDay(selDate, lastDate))
-        fetchPrevCalculationData(selectedDate.value);
-      else fetchSoldiers();
-      titles.value = await fetchElementTitles();
     };
 
     const fetchElementTitles = async () => {
@@ -143,31 +129,13 @@ export default {
       );
     };
 
-    const getNameOfUnit = async () => {
+    const getFirstDateCalc = async () => {
       try {
-        const response = await axios.get("getNameOfUnit");
-        unitName.value = response.data;
+        const response = await axios.get("getFirstCalcDate");
+        firstDate = new Date(response.data);
       } catch (error) {
         console.error(error);
         if (error.response?.status === 401) router.push("/signIn");
-      }
-    };
-
-    const fetchTableTitles = async (prefix) => {
-      const lang = localStorage.getItem("lang") || "en";
-
-      try {
-        const titlesFile = await import(`@/locales/${lang}.json`);
-        const allTitles = titlesFile.default;
-
-        return Object.fromEntries(
-          Object.entries(allTitles).filter(([key]) =>
-            key.startsWith(prefix + ".")
-          )
-        );
-      } catch (error) {
-        console.error(`Could not load titles for language '${lang}':`, error);
-        return {};
       }
     };
 
@@ -190,6 +158,76 @@ export default {
         console.error(error);
         if (error.response?.status === 401) router.push("/signIn");
         messageStore.show(error.response.data, "error");
+      }
+    };
+
+    const fetchPrevCalculation = (event) => {
+      selectedDate.value = new Date(event.target.value);
+      if (selectedDate.value < firstDate || selectedDate.value > lastDate) {
+        const lastSelectedDate = localStorage.getItem("selectedDate");
+        const dateToSet =
+          typeof lastSelectedDate === "string"
+            ? new Date(lastSelectedDate)
+            : lastSelectedDate;
+        selectedDate.value = dateToSet.toISOString().split("T")[0];
+        messageStore.show(
+          `The date you selected is out of this period (${firstDate},${lastDate}.)`,
+          "error",
+          3300
+        );
+        return;
+      }
+      changeLanguage();
+    };
+
+    const changeLanguage = async () => {
+      localStorage.setItem("lang", locale.value);
+
+      const selDate =
+        typeof selectedDate.value === "string"
+          ? new Date(selectedDate.value)
+          : selectedDate.value;
+      if (lastDate && selDate && !isSameDay(selDate, lastDate))
+        fetchPrevCalculationData(selectedDate.value);
+      else fetchSoldiers();
+      titles.value = await fetchElementTitles();
+    };
+
+    const fetchPrevCalculationData = async (selDate) => {
+      tableHeaders.value = await fetchTableTitles("prevcalc");
+      localStorage.setItem("selectedDate", selDate);
+      try {
+        selectedDate.value =
+          typeof selDate === "string"
+            ? selDate
+            : selDate.toISOString().split("T")[0];
+        const response = await axios.get("getPreviousCalculation", {
+          params: { date: selDate },
+        });
+        const data = await setTableDataBasedOnLang(response.data);
+        if (data.length) soldiers.value = Object.values(data);
+      } catch (error) {
+        console.error(error);
+        if (error.response?.status === 401) router.push("/signIn");
+        messageStore.show(error.response.data, "error");
+      }
+    };
+
+    const fetchTableTitles = async (prefix) => {
+      const lang = localStorage.getItem("lang") || "en";
+
+      try {
+        const titlesFile = await import(`@/locales/${lang}.json`);
+        const allTitles = titlesFile.default;
+
+        return Object.fromEntries(
+          Object.entries(allTitles).filter(([key]) =>
+            key.startsWith(prefix + ".")
+          )
+        );
+      } catch (error) {
+        console.error(`Could not load titles for language '${lang}':`, error);
+        return {};
       }
     };
 
@@ -246,45 +284,6 @@ export default {
       });
 
       return soldiers;
-    };
-
-    const fetchPrevCalculation = (event) => {
-      selectedDate.value = new Date(event.target.value);
-      if (selectedDate.value < firstDate || selectedDate.value > lastDate) {
-        const lastSelectedDate = localStorage.getItem("selectedDate");
-        const dateToSet =
-          typeof lastSelectedDate === "string"
-            ? new Date(lastSelectedDate)
-            : lastSelectedDate;
-        selectedDate.value = dateToSet.toISOString().split("T")[0];
-        messageStore.show(
-          `The date you selected is out of this period (${firstDate},${lastDate}.)`,
-          "error",
-          3300
-        );
-        return;
-      }
-      changeLanguage();
-    };
-
-    const fetchPrevCalculationData = async (selDate) => {
-      tableHeaders.value = await fetchTableTitles("prevcalc");
-      localStorage.setItem("selectedDate", selDate);
-      try {
-        selectedDate.value =
-          typeof selDate === "string"
-            ? selDate
-            : selDate.toISOString().split("T")[0];
-        const response = await axios.get("getPreviousCalculation", {
-          params: { date: selDate },
-        });
-        const data = await setTableDataBasedOnLang(response.data);
-        if (data.length) soldiers.value = Object.values(data);
-      } catch (error) {
-        console.error(error);
-        if (error.response?.status === 401) router.push("/signIn");
-        messageStore.show(error.response.data, "error");
-      }
     };
 
     const isSameDay = (date1, date2) => {
