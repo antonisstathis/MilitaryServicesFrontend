@@ -1,5 +1,6 @@
 import { createApp } from "vue";
 import App from "./App.vue";
+import { createPinia } from "pinia";
 import router from "./router"; // Your router configuration
 import axios from "axios"; // Import axios
 import i18n from "./i18n";
@@ -7,6 +8,7 @@ import "./assets/styles/global.css";
 
 // Create Vue app
 const app = createApp(App);
+const pinia = createPinia();
 
 // Example global configuration object
 const config = {
@@ -33,6 +35,8 @@ axios.interceptors.request.use((config) => {
 // Use the router and store
 app.use(router);
 app.use(i18n);
+
+app.use(pinia);
 
 // Mount the app
 app.mount("#app");

@@ -1,12 +1,10 @@
 <template>
-  <router-view></router-view>
+  <router-view />
+  <MessagePopup />
 </template>
 
-<script>
-export default {
-  name: "App",
-  components: {},
-};
+<script setup>
+import MessagePopup from "@/components/MessagePopup/MessagePopup.vue";
 </script>
 
 <style>

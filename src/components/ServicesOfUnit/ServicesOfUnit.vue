@@ -113,6 +113,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import { useMessageStore } from "@/stores/useMessageStore";
 
 export default {
   setup() {
@@ -130,6 +131,7 @@ export default {
     const selectedServices = ref([]);
     const titles = ref({});
     const selectedDate = ref("");
+    const messageStore = useMessageStore();
 
     onMounted(async () => {
       getNameOfUnit();
@@ -166,15 +168,21 @@ export default {
         }
 
         const idsToDelete = selectedServices.value.map((service) => service.id);
-        await axios.post("deleteServices", { ids: idsToDelete });
+        const response = await axios.post("deleteServices", {
+          ids: idsToDelete,
+        });
 
         services.value = services.value.filter(
           (service) => !idsToDelete.includes(service.id)
         );
         selectedServices.value = [];
+        messageStore.show(response.data, "success");
       } catch (error) {
         console.error("Failed to delete services:", error);
-        alert("An error occurred while deleting services.");
+        messageStore.show(
+          "An error occurred while deleting services.",
+          "error"
+        );
       }
     };
 
@@ -191,12 +199,13 @@ export default {
         const response = await axios.post("saveNewServices", payload);
         showPopup.value = false;
         fetchServicesOfUnit();
-        alert(response.data);
+        messageStore.show(response.data, "success");
       } catch (error) {
         if (error.response) {
-          alert(
+          messageStore.show(
             error.response.data ||
-              "You are not authorized to add or delete services."
+              "You are not authorized to add or delete services.",
+            "error"
           );
         }
         console.error("Request failed:", error);
@@ -220,7 +229,11 @@ export default {
         if (error.response?.status === 401) {
           router.push("/signIn");
         } else {
-          alert(error);
+          messageStore.show(
+            error.response.data ||
+              "You are not authorized to add or delete services.",
+            "error"
+          );
         }
       }
     };
@@ -272,7 +285,11 @@ export default {
         if (error.response?.status === 401) {
           router.push("/signIn");
         } else {
-          alert(error);
+          messageStore.show(
+            error.response.data ||
+              "You are not authorized to add or delete services.",
+            "error"
+          );
         }
       }
     };
