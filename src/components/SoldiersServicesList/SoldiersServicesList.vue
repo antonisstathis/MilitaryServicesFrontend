@@ -42,6 +42,12 @@
       <button class="logout-btn" @click="logout">
         {{ titles.logout }}
       </button>
+      <input
+        type="text"
+        v-model="searchQuery"
+        :placeholder="titles.search"
+        class="search-input"
+      />
     </div>
     <div id="table">
       <table>
@@ -58,7 +64,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="soldier in soldiers"
+            v-for="soldier in filteredSoldiers"
             :key="soldier.token"
             @click="selectSoldier(soldier)"
           >
@@ -78,7 +84,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { useMessageStore } from "@/stores/useMessageStore";
@@ -97,6 +103,7 @@ export default {
     let firstDate;
     let lastDate;
     const selectedDate = ref("");
+    const searchQuery = ref("");
 
     // Lifecycle hooks
     onMounted(async () => {
@@ -329,6 +336,17 @@ export default {
       router.push(path);
     };
 
+    const filteredSoldiers = computed(() => {
+      if (!searchQuery.value) return soldiers.value;
+
+      return soldiers.value.filter((soldier) =>
+        Object.values(soldier)
+          .join(" ")
+          .toLowerCase()
+          .includes(searchQuery.value.toLowerCase())
+      );
+    });
+
     return {
       unitName,
       soldiers,
@@ -346,6 +364,8 @@ export default {
       logout,
       navigateTo,
       selectedDate,
+      filteredSoldiers,
+      searchQuery,
     };
   },
 };
@@ -524,5 +544,15 @@ input[type="date"]:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.search-input {
+  padding: 10px;
+  margin-bottom: 15px;
+  width: 50%;
+  max-width: 300px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
 }
 </style>
