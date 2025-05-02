@@ -1,5 +1,21 @@
 <template>
   <div id="app">
+    <nav class="menu">
+      <ul>
+        <li>
+          <router-link to="/home">{{ titles.home }}</router-link>
+        </li>
+        <li>
+          <router-link to="/personnel">{{ titles.personnel }}</router-link>
+        </li>
+        <li>
+          <router-link to="/soldiersList">{{ titles.soldiers }}</router-link>
+        </li>
+        <li>
+          <router-link to="/servicesOfUnit">{{ titles.services }}</router-link>
+        </li>
+      </ul>
+    </nav>
     <div id="header">
       <h1>{{ unitName }}</h1>
       <div class="lang-wrapper">
@@ -8,26 +24,27 @@
           <option value="el">🇬🇷 Ελληνικά</option>
         </select>
       </div>
+      <button class="primary-btn" @click="newServices">
+        {{ titles.newservices }}
+      </button>
+      <button class="primary-btn" @click="navigateTo('/servicesOfUnit')">
+        {{ titles.servicesofunit }}
+      </button>
+      <button class="primary-btn" @click="fetchSoldiers">
+        {{ titles.lastservices }}
+      </button>
+      <input
+        type="date"
+        id="date"
+        v-model="selectedDate"
+        @change="fetchPrevCalculation($event)"
+      />
+      <button class="logout-btn" @click="logout">
+        {{ titles.logout }}
+      </button>
     </div>
     <div id="table">
-      <div class="registration-input">
-        <div class="registration-bar">
-          <label for="registrationInput">{{ titles.registrationnumber }}</label>
-          <input
-            id="registrationInput"
-            type="text"
-            v-model="soldierIdentity"
-            @change="fetchPrevCalculation($event)"
-          />
-          <button class="primary-btn" @click="addSoldier">
-            {{ titles.addsoldier }}
-          </button>
-          <button class="primary-btn" @click="navigateTo('/home')">
-            {{ titles.back }}
-          </button>
-        </div>
-      </div>
-      <table class="table-scroll-wrapper">
+      <table>
         <thead>
           <tr>
             <th
@@ -74,14 +91,17 @@ export default {
     // State variables
     const unitName = ref("");
     const soldiers = ref([]);
-    const soldierIdentity = ref("");
     const tableHeaders = ref([]);
     const titles = ref({});
     const locale = ref(localStorage.getItem("lang") || "en");
+    let firstDate;
+    let lastDate;
+    const selectedDate = ref("");
 
     // Lifecycle hooks
     onMounted(async () => {
       getNameOfUnit();
+      getFirstDateCalc();
       fetchSoldiers();
       titles.value = await fetchElementTitles();
     });
@@ -104,17 +124,36 @@ export default {
 
       return Object.fromEntries(
         Object.entries(titles)
-          .filter(([key]) => key.startsWith("soldierselement."))
-          .map(([key, value]) => [key.slice("soldierselement.".length), value])
+          .filter(([key]) => key.startsWith("element."))
+          .map(([key, value]) => [key.slice("element.".length), value])
       );
     };
 
-    const fetchSoldiers = async () => {
-      tableHeaders.value = await fetchTableTitles("soldiers");
+    const getFirstDateCalc = async () => {
       try {
-        const response = await axios.get("getSoldiersOfUnit", {});
+        const response = await axios.get("getFirstCalcDate");
+        firstDate = new Date(response.data);
+      } catch (error) {
+        console.error(error);
+        if (error.response?.status === 401) router.push("/signIn");
+      }
+    };
+
+    const fetchSoldiers = async () => {
+      tableHeaders.value = await fetchTableTitles("lastcalc");
+      try {
+        const response = await axios.get("getSoldiers", {});
         const data = await setTableDataBasedOnLang(response.data);
+        localStorage.setItem("selectedDate", lastDate);
         if (data.length) soldiers.value = Object.values(data);
+
+        const dateValue = soldiers.value[0]?.date;
+        if (dateValue) {
+          const formattedDate = dateValue.split("-").reverse().join("-");
+          const date = new Date(formattedDate);
+          lastDate = date;
+          selectedDate.value = date.toISOString().split("T")[0];
+        }
       } catch (error) {
         console.error(error);
         if (error.response?.status === 401) router.push("/signIn");
@@ -122,14 +161,56 @@ export default {
       }
     };
 
-    const addSoldier = () => {
-      console.log("addSoldier");
+    const fetchPrevCalculation = (event) => {
+      selectedDate.value = new Date(event.target.value);
+      if (selectedDate.value < firstDate || selectedDate.value > lastDate) {
+        const lastSelectedDate = localStorage.getItem("selectedDate");
+        const dateToSet =
+          typeof lastSelectedDate === "string"
+            ? new Date(lastSelectedDate)
+            : lastSelectedDate;
+        selectedDate.value = dateToSet.toISOString().split("T")[0];
+        messageStore.show(
+          `The date you selected is out of this period (${firstDate},${lastDate}.)`,
+          "error",
+          3300
+        );
+        return;
+      }
+      changeLanguage();
     };
 
     const changeLanguage = async () => {
       localStorage.setItem("lang", locale.value);
-      fetchSoldiers();
+
+      const selDate =
+        typeof selectedDate.value === "string"
+          ? new Date(selectedDate.value)
+          : selectedDate.value;
+      if (lastDate && selDate && !isSameDay(selDate, lastDate))
+        fetchPrevCalculationData(selectedDate.value);
+      else fetchSoldiers();
       titles.value = await fetchElementTitles();
+    };
+
+    const fetchPrevCalculationData = async (selDate) => {
+      tableHeaders.value = await fetchTableTitles("prevcalc");
+      localStorage.setItem("selectedDate", selDate);
+      try {
+        selectedDate.value =
+          typeof selDate === "string"
+            ? selDate
+            : selDate.toISOString().split("T")[0];
+        const response = await axios.get("getPreviousCalculation", {
+          params: { date: selDate },
+        });
+        const data = await setTableDataBasedOnLang(response.data);
+        if (data.length) soldiers.value = Object.values(data);
+      } catch (error) {
+        console.error(error);
+        if (error.response?.status === 401) router.push("/signIn");
+        messageStore.show(error.response.data, "error");
+      }
     };
 
     const fetchTableTitles = async (prefix) => {
@@ -205,15 +286,43 @@ export default {
       return soldiers;
     };
 
-    const selectSoldier = async (soldier) => {
-      //const lang = localStorage.getItem("lang");
+    const isSameDay = (date1, date2) => {
+      return (
+        date1.getFullYear() === date2.getFullYear() &&
+        date1.getMonth() === date2.getMonth() &&
+        date1.getDate() === date2.getDate()
+      );
+    };
+
+    const newServices = async () => {
       try {
-        console.log(soldier);
-        router.push("/servicesOfSoldier");
+        const response = await axios.get("calc");
+        fetchSoldiers();
+        messageStore.show(response.data, "success", 3000);
+      } catch (error) {
+        console.error(error);
+        if (error.response?.status === 401) router.push("/signIn");
+        messageStore.show(error.response.data, "error");
+      }
+    };
+
+    const selectSoldier = async (soldier) => {
+      const lang = localStorage.getItem("lang");
+      try {
+        const response = await axios.post("getSoldier", soldier, {
+          params: { lang },
+        });
+        localStorage.setItem("formData", JSON.stringify(response.data));
+        router.push("/soldierForm");
       } catch (error) {
         console.error("Request failed:", error);
         if (error.response?.status === 401) router.push("/signIn");
       }
+    };
+
+    const logout = () => {
+      localStorage.clear();
+      router.push("/signIn");
     };
 
     const navigateTo = (path) => {
@@ -231,10 +340,12 @@ export default {
       getNameOfUnit,
       fetchTableTitles,
       fetchSoldiers,
+      fetchPrevCalculation,
+      newServices,
       selectSoldier,
+      logout,
       navigateTo,
-      addSoldier,
-      soldierIdentity,
+      selectedDate,
     };
   },
 };
@@ -264,7 +375,7 @@ export default {
 }
 
 .primary-btn {
-  background-color: #22c55e;
+  background-color: #22c55e; /* Soft Green */
   color: white;
   border: 2px solid #22c55e;
   padding: 10px 20px;
@@ -314,6 +425,61 @@ tr:hover {
   background-color: #e5e7eb; /* Slightly Darker Gray */
 }
 
+.logout-btn {
+  background-color: white;
+  color: #ef4444; /* Red for contrast */
+  border: 2px solid #ef4444;
+  padding: 10px 20px;
+  margin: 5px;
+  cursor: pointer;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: #ef4444;
+  color: white;
+}
+
+.menu {
+  width: 100%;
+  background: #1e3a8a; /* Deep Navy Blue */
+  padding: 15px 0;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.menu li {
+  display: inline;
+}
+
+.menu a {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  padding: 10px 15px;
+  border-radius: 5px;
+  transition: background-color 0.3s ease-in-out, color 0.3s linear,
+    transform 0.3s ease, opacity 0.3s ease-out;
+  font-size: 1.2rem;
+}
+
+.menu a:hover {
+  background: rgba(255, 255, 255, 0.3);
+  color: #22c55e; /* Soft Green */
+}
+
 input[type="date"] {
   padding: 0.6rem 1rem;
   border: 1px solid #ccc;
@@ -358,41 +524,5 @@ input[type="date"]:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.registration-bar {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-}
-
-.registration-bar label {
-  font-weight: bold;
-  font-size: 1rem;
-  color: #1e3a8a;
-}
-
-.registration-bar input[type="text"] {
-  padding: 10px 15px;
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  font-size: 1rem;
-  width: 250px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.registration-bar input[type="text"]:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
-  outline: none;
-}
-
-.registration-bar .primary-btn {
-  padding: 10px 20px;
-  font-size: 1rem;
-  border-radius: 10px;
-  white-space: nowrap;
 }
 </style>

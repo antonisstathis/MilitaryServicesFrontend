@@ -8,6 +8,17 @@
   "element.lastservices": "Last Services",
   "element.logout": "Logout",
 
+  "soldierselement.addsoldier": "Add Soldier",
+  "soldierselement.registrationnumber": "Registration Number",
+  "soldierselement.back": "Back",
+  "soldiers.identity": "Registration Number",
+  "soldiers.company": "Company",
+  "soldiers.name": "Name",
+  "soldiers.surname": "Surname",
+  "soldiers.situation": "Situation",
+  "soldiers.active": "Active",
+  "soldiers.dutystatus": "Duty Status",
+
   "serofunitelement.addservices": "Add Services",
   "serofunitelement.deleteservices": "Delete Services",
   "serofunitelement.currentservices": "Current Services",

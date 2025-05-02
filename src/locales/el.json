@@ -8,6 +8,17 @@
   "element.lastservices": "Τελευταίες υπηρεσίες",
   "element.logout": "Αποσύνδεση",
 
+  "soldierselement.addsoldier": "Προσθήκη Στρατιώτη",
+  "soldierselement.registrationnumber": "ΑΣΜ",
+  "soldierselement.back": "Επιστροφή",
+  "soldiers.identity": "ΑΣΜ",
+  "soldiers.company": "Λόχος",
+  "soldiers.name": "Όνομα",
+  "soldiers.surname": "Επώνυμο",
+  "soldiers.situation": "Ικανότητα",
+  "soldiers.active": "Κατάσταση Στρατιώτη",
+  "soldiers.dutystatus": "Διαθεσιμότητα",
+
   "serofunitelement.addservices": "Προσθήκη Υπηρεσίας",
   "serofunitelement.deleteservices": "Διαγραφή Υπηρεσιών",
   "serofunitelement.currentservices": "Τρέχουσες Υπηρεσίες",

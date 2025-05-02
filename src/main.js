@@ -10,7 +10,6 @@ import "./assets/styles/global.css";
 const app = createApp(App);
 const pinia = createPinia();
 
-// Example global configuration object
 const config = {
   backEndUrl: "http://localhost:8080/",
 };
