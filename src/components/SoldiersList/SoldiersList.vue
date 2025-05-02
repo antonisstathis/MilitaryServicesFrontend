@@ -12,10 +12,16 @@
     <div id="table">
       <div class="registration-input">
         <div class="registration-bar">
-          <label for="registrationInput">{{ titles.registrationnumber }}</label>
+          <input
+            type="text"
+            v-model="searchQuery"
+            :placeholder="titles.search"
+            class="search-input"
+          />
           <input
             id="registrationInput"
             type="text"
+            :placeholder="titles.registrationnumber"
             v-model="soldierIdentity"
             @change="fetchPrevCalculation($event)"
           />
@@ -41,7 +47,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="soldier in soldiers"
+            v-for="soldier in filteredSoldiers"
             :key="soldier.token"
             @click="selectSoldier(soldier)"
           >
@@ -61,7 +67,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { useMessageStore } from "@/stores/useMessageStore";
@@ -78,6 +84,7 @@ export default {
     const tableHeaders = ref([]);
     const titles = ref({});
     const locale = ref(localStorage.getItem("lang") || "en");
+    const searchQuery = ref("");
 
     // Lifecycle hooks
     onMounted(async () => {
@@ -96,6 +103,19 @@ export default {
         if (error.response?.status === 401) router.push("/signIn");
       }
     };
+
+    const filteredSoldiers = computed(() => {
+      console.log("ffffff");
+      if (!searchQuery.value) return soldiers.value;
+
+      const query = searchQuery.value.toLowerCase();
+
+      return soldiers.value.filter((soldier) => {
+        return Object.values(soldier).some((val) =>
+          String(val).toLowerCase().includes(query)
+        );
+      });
+    });
 
     const fetchElementTitles = async () => {
       const lang = localStorage.getItem("lang") || "en";
@@ -235,6 +255,8 @@ export default {
       navigateTo,
       addSoldier,
       soldierIdentity,
+      searchQuery,
+      filteredSoldiers,
     };
   },
 };
@@ -363,9 +385,9 @@ input[type="date"]:focus {
 .registration-bar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 15px;
   margin-bottom: 20px;
-  flex-wrap: wrap;
 }
 
 .registration-bar label {
@@ -394,5 +416,13 @@ input[type="date"]:focus {
   font-size: 1rem;
   border-radius: 10px;
   white-space: nowrap;
+}
+
+.search-input {
+  padding: 10px 15px;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  font-size: 1rem;
+  width: 250px;
 }
 </style>
