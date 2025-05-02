@@ -33,23 +33,25 @@
       <button class="primary-btn" @click="fetchSoldiers">
         {{ titles.lastservices }}
       </button>
-      <input
-        type="date"
-        id="date"
-        v-model="selectedDate"
-        @change="fetchPrevCalculation($event)"
-      />
       <button class="logout-btn" @click="logout">
         {{ titles.logout }}
       </button>
-      <input
-        type="text"
-        v-model="searchQuery"
-        :placeholder="titles.search"
-        class="search-input"
-      />
     </div>
     <div id="table">
+      <div id="telemets">
+        <input
+          type="text"
+          v-model="searchQuery"
+          :placeholder="titles.search"
+          class="search-input"
+        />
+        <input
+          type="date"
+          id="date"
+          v-model="selectedDate"
+          @change="fetchPrevCalculation($event)"
+        />
+      </div>
       <table>
         <thead>
           <tr>
@@ -421,6 +423,13 @@ export default {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+#telemets {
+  display: flex;
+  gap: 10px; /* Space between inputs */
+  justify-content: flex-start; /* Align to the left */
+  margin-bottom: 20px; /* Space between inputs and table */
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -546,13 +555,14 @@ input[type="date"]:focus {
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
-.search-input {
+.search-input,
+.date-input {
   padding: 10px;
-  margin-bottom: 15px;
-  width: 50%;
-  max-width: 300px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 1rem;
+  height: 40px;
+  box-sizing: border-box;
+  width: 250px;
 }
 </style>
