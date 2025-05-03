@@ -20,6 +20,11 @@
   "soldiers.situation": "Ικανότητα",
   "soldiers.active": "Κατάσταση Στρατιώτη",
   "soldiers.dutystatus": "Διαθεσιμότητα",
+  "soldiers.patronymic": "Πατρώνυμο",
+  "soldiers.matronymic": "Μητρώνυμο",
+  "soldiers.mobilephone": "Κινητό Τηλέφωνο",
+  "soldiers.city": "Πόλη",
+  "soldiers.address": "Διεύθυνση",
 
   "serofunitelement.addservices": "Προσθήκη Υπηρεσίας",
   "serofunitelement.deleteservices": "Διαγραφή Υπηρεσιών",

@@ -20,6 +20,11 @@
   "soldiers.situation": "Situation",
   "soldiers.active": "Active",
   "soldiers.dutystatus": "Duty Status",
+  "soldiers.patronymic": "Patronymic",
+  "soldiers.matronymic": "Matronymic",
+  "soldiers.mobilephone": "Mobile Phone",
+  "soldiers.city": "City",
+  "soldiers.address": "Address",
 
   "serofunitelement.addservices": "Add Services",
   "serofunitelement.deleteservices": "Delete Services",

@@ -306,15 +306,16 @@ export default {
   width: 70%;
   margin: 20px auto;
   text-align: center;
-  background: rgba(255, 255, 255, 0.8); /* Slightly Transparent White */
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.8); /* Slightly Transparent White */
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden; /* Ensures border-radius works */
 }
 
 th,
