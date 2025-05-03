@@ -22,8 +22,7 @@
             id="registrationInput"
             type="text"
             :placeholder="titles.registrationnumber"
-            v-model="soldierIdentity"
-            @change="fetchPrevCalculation($event)"
+            @input="findSoldierByRegistrationNumber($event.target.value)"
           />
           <button class="primary-btn" @click="addSoldier">
             {{ titles.addsoldier }}
@@ -137,6 +136,19 @@ export default {
         if (data.length) soldiers.value = Object.values(data);
       } catch (error) {
         console.error(error);
+        if (error.response?.status === 401) router.push("/signIn");
+        messageStore.show(error.response.data, "error");
+      }
+    };
+
+    const findSoldierByRegistrationNumber = async (regNumber) => {
+      try {
+        const response = await axios.get("getSoldierByRegistrationNumber", {
+          params: { regnumb: regNumber },
+        });
+        const data = await setTableDataBasedOnLang(response.data);
+        if (data.length) soldiers.value = Object.values(data);
+      } catch (error) {
         if (error.response?.status === 401) router.push("/signIn");
         messageStore.show(error.response.data, "error");
       }
@@ -257,6 +269,7 @@ export default {
       soldierIdentity,
       searchQuery,
       filteredSoldiers,
+      findSoldierByRegistrationNumber,
     };
   },
 };
