@@ -52,7 +52,7 @@
               )"
               :key="key"
             >
-              {{ value }}
+              {{ key === "serviceDate" ? formatDate(value) : value }}
             </td>
           </tr>
         </tbody>
@@ -169,6 +169,13 @@ export default {
       return results;
     });
 
+    const formatDate = (value) => {
+      if (typeof value === "string" && value.includes("T")) {
+        return value.split("T")[0];
+      }
+      return value;
+    };
+
     const navigateTo = (path) => {
       router.push(path);
     };
@@ -187,6 +194,7 @@ export default {
       armedFilter,
       fetchTableTitles,
       navigateTo,
+      formatDate,
     };
   },
 };
