@@ -26,6 +26,12 @@
   "soldiers.city": "Πόλη",
   "soldiers.address": "Διεύθυνση",
 
+  "servicesofsold.nameofservice": "Υπηρεσία",
+  "servicesofsold.date": "Ημερομηνία",
+  "servicesofsold.armed": "Κατηγορία Υπηρεσίας",
+  "servicesofsold.description": "Περιγραφή",
+  "servicesofsold.shift": "Ώρες",
+
   "serofunitelement.addservices": "Προσθήκη Υπηρεσίας",
   "serofunitelement.deleteservices": "Διαγραφή Υπηρεσιών",
   "serofunitelement.currentservices": "Τρέχουσες Υπηρεσίες",

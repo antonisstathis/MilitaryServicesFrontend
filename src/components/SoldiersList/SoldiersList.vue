@@ -48,7 +48,7 @@
           <tr
             v-for="soldier in filteredSoldiers"
             :key="soldier.token"
-            @click="selectSoldier(soldier)"
+            @click="loadServicesOfSoldier(soldier)"
           >
             <td
               v-for="[key, value] in Object.entries(soldier).filter(
@@ -104,7 +104,6 @@ export default {
     };
 
     const filteredSoldiers = computed(() => {
-      console.log("ffffff");
       if (!searchQuery.value) return soldiers.value;
 
       const query = searchQuery.value.toLowerCase();
@@ -237,10 +236,13 @@ export default {
       return soldiers;
     };
 
-    const selectSoldier = async (soldier) => {
-      //const lang = localStorage.getItem("lang");
+    const loadServicesOfSoldier = async (soldier) => {
       try {
-        console.log(soldier);
+        localStorage.setItem("soldierToken", soldier.token);
+        localStorage.setItem(
+          "soldierName",
+          `${soldier.name} ${soldier.surname}`
+        );
         router.push("/servicesOfSoldier");
       } catch (error) {
         console.error("Request failed:", error);
@@ -263,7 +265,7 @@ export default {
       getNameOfUnit,
       fetchTableTitles,
       fetchSoldiers,
-      selectSoldier,
+      loadServicesOfSoldier,
       navigateTo,
       addSoldier,
       soldierIdentity,

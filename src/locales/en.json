@@ -26,6 +26,12 @@
   "soldiers.city": "City",
   "soldiers.address": "Address",
 
+  "servicesofsold.nameofservice": "Service",
+  "servicesofsold.date": "Date",
+  "servicesofsold.armed": "Armed",
+  "servicesofsold.description": "Description",
+  "servicesofsold.shift": "shift",
+
   "serofunitelement.addservices": "Add Services",
   "serofunitelement.deleteservices": "Delete Services",
   "serofunitelement.currentservices": "Current Services",

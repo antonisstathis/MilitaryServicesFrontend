@@ -4,6 +4,7 @@ import SoldiersServicesList from "@/components/SoldiersServicesList/SoldiersServ
 import SoldiersList from "@/components/SoldiersList/SoldiersList.vue";
 import SoldierForm from "@/components/SoldierForm/SoldierForm.vue";
 import ServicesOfUnit from "@/components/ServicesOfUnit/ServicesOfUnit.vue";
+import ServicesOfSoldier from "@/components/ServicesOfSoldier/ServicesOfSoldier.vue";
 
 const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
@@ -32,6 +33,11 @@ const router = createRouter({
       path: "/servicesOfUnit",
       name: "servicesOfUnit",
       component: ServicesOfUnit,
+    },
+    {
+      path: "/servicesOfSoldier",
+      name: "servicesOfSoldier",
+      component: ServicesOfSoldier,
     },
     {
       path: "/:pathMatch(.*)*",
