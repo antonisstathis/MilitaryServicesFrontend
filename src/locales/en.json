@@ -12,6 +12,7 @@
   "soldierselement.addsoldier": "Add Soldier",
   "soldierselement.registrationnumber": "Registration Number",
   "soldierselement.back": "Back",
+  "soldierselement.rows": "services",
   "soldierselement.search": "Search",
   "soldiers.identity": "Registration Number",
   "soldiers.company": "Company",
@@ -30,7 +31,7 @@
   "servicesofsold.date": "Date",
   "servicesofsold.armed": "Armed",
   "servicesofsold.description": "Description",
-  "servicesofsold.shift": "shift",
+  "servicesofsold.shift": "Shift",
 
   "serofunitelement.addservices": "Add Services",
   "serofunitelement.deleteservices": "Delete Services",

@@ -18,10 +18,19 @@
             :placeholder="titles.search"
             class="search-input"
           />
+          <select v-model="armedFilter" class="armed-select">
+            <option value="armed">Armed</option>
+            <option value="unarmed">Unarmed</option>
+            <option value="free of duty">Free of Duty</option>
+            <option value="all">All</option>
+          </select>
           <button class="primary-btn" @click="navigateTo('/soldiersList')">
             {{ titles.back }}
           </button>
         </div>
+      </div>
+      <div class="table-meta">
+        {{ filteredServices.length }} {{ titles.rows }}
       </div>
       <table class="table-scroll-wrapper">
         <thead>
@@ -62,6 +71,7 @@ export default {
   setup() {
     const router = useRouter();
     const messageStore = useMessageStore();
+    const armedFilter = ref("all");
 
     // State variables
     const soldierName = ref("");
@@ -102,18 +112,6 @@ export default {
       }
     };
 
-    const filteredServices = computed(() => {
-      if (!searchQuery.value) return services.value;
-
-      const query = searchQuery.value.toLowerCase();
-
-      return services.value.filter((service) => {
-        return Object.values(service).some((val) =>
-          String(val).toLowerCase().includes(query)
-        );
-      });
-    });
-
     const fetchElementTitles = async () => {
       const lang = localStorage.getItem("lang") || "en";
       const titlesFile = await import(`@/locales/${lang}.json`);
@@ -150,6 +148,27 @@ export default {
       }
     };
 
+    const filteredServices = computed(() => {
+      let results = services.value;
+
+      if (armedFilter.value !== "all") {
+        results = results.filter(
+          (service) => service.armed === armedFilter.value
+        );
+      }
+
+      if (searchQuery.value) {
+        const query = searchQuery.value.toLowerCase();
+        results = results.filter((service) =>
+          Object.values(service).some((val) =>
+            String(val).toLowerCase().includes(query)
+          )
+        );
+      }
+
+      return results;
+    });
+
     const navigateTo = (path) => {
       router.push(path);
     };
@@ -163,7 +182,9 @@ export default {
       fetchServicesOfSoldier,
       fetchElementTitles,
       getNameOfSoldier,
+      searchQuery,
       filteredServices,
+      armedFilter,
       fetchTableTitles,
       navigateTo,
     };
@@ -298,5 +319,38 @@ input[type="date"]:focus {
   border-radius: 12px;
   font-size: 1rem;
   width: 250px;
+}
+
+.table-meta {
+  width: 100%;
+  text-align: left;
+  font-size: 1rem;
+  color: #1e3a8a;
+  margin-bottom: 8px;
+  font-weight: 500;
+  padding-right: 10px;
+}
+
+.armed-select {
+  appearance: none;
+  padding: 8px 12px;
+  margin: 0 10px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  background-color: #f0f0f0;
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.armed-select:hover {
+  background-color: #e2e2e2;
+}
+
+.armed-select:focus {
+  outline: none;
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.25);
 }
 </style>
