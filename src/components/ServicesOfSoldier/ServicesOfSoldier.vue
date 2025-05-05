@@ -24,6 +24,9 @@
             <option value="free of duty">Free of Duty</option>
             <option value="all">All</option>
           </select>
+          <button class="primary-btn" @click="dischargeSoldier()">
+            {{ titles.dischargesoldier }}
+          </button>
           <button class="primary-btn" @click="navigateTo('/soldiersList')">
             {{ titles.back }}
           </button>
@@ -105,6 +108,20 @@ export default {
           params: { soldierToken: soldierToken },
         });
         services.value = response.data;
+      } catch (error) {
+        console.error(error);
+        if (error.response?.status === 401) router.push("/signIn");
+        messageStore.show(error.response.data, "error");
+      }
+    };
+
+    const dischargeSoldier = async () => {
+      const soldierToken = localStorage.getItem("soldierToken");
+      try {
+        const response = await axios.get("dischargeSoldier", {
+          params: { soldierToken: soldierToken },
+        });
+        messageStore.show(response.data, "success");
       } catch (error) {
         console.error(error);
         if (error.response?.status === 401) router.push("/signIn");
@@ -195,6 +212,7 @@ export default {
       fetchTableTitles,
       navigateTo,
       formatDate,
+      dischargeSoldier,
     };
   },
 };
