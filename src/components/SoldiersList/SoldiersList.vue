@@ -32,6 +32,9 @@
           </button>
         </div>
       </div>
+      <div class="table-meta">
+        {{ filteredSoldiers.length }} {{ titles.soldiers }}
+      </div>
       <table class="table-scroll-wrapper">
         <thead>
           <tr>
@@ -398,20 +401,6 @@ input[type="date"]:focus {
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
-.registration-bar {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.registration-bar label {
-  font-weight: bold;
-  font-size: 1rem;
-  color: #1e3a8a;
-}
-
 .registration-bar input[type="text"] {
   padding: 10px 15px;
   border: 1px solid #ccc;
@@ -440,5 +429,16 @@ input[type="date"]:focus {
   border-radius: 12px;
   font-size: 1rem;
   width: 250px;
+  margin: 5px;
+}
+
+.table-meta {
+  width: 100%;
+  text-align: left;
+  font-size: 1rem;
+  color: #1e3a8a;
+  margin-bottom: 8px;
+  font-weight: 500;
+  padding-right: 10px;
 }
 </style>

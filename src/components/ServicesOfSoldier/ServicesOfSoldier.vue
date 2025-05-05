@@ -30,7 +30,7 @@
         </div>
       </div>
       <div class="table-meta">
-        {{ filteredServices.length }} {{ titles.rows }}
+        {{ filteredServices.length }} {{ titles.services }}
       </div>
       <table class="table-scroll-wrapper">
         <thead>
