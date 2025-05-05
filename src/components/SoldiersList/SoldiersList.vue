@@ -157,7 +157,7 @@ export default {
     };
 
     const addSoldier = () => {
-      console.log("addSoldier");
+      navigateTo("/addSoldier");
     };
 
     const changeLanguage = async () => {
