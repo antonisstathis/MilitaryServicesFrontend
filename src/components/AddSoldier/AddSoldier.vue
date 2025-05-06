@@ -6,9 +6,30 @@
     </div>
 
     <form @submit.prevent="submitForm" class="form-grid">
-      <div v-for="(label, key) in tableHeaders" :key="key" class="form-field">
+      <div
+        v-for="(label, key) in filteredTableHeaders"
+        :key="key"
+        class="form-field"
+      >
         <label :for="key">{{ label }}</label>
-        <input type="text" :id="key" v-model="form[key]" required />
+
+        <select
+          v-if="key === 'situation' || key === 'active'"
+          :id="key"
+          v-model="form[key]"
+          required
+        >
+          <option disabled value="">-- Select --</option>
+          <option
+            v-for="option in getSelectOptions(key)"
+            :key="option"
+            :value="option"
+          >
+            {{ option }}
+          </option>
+        </select>
+
+        <input v-else type="text" :id="key" v-model="form[key]" required />
       </div>
 
       <div class="form-actions">
@@ -21,7 +42,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { reactive } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
@@ -37,6 +58,7 @@ export default {
     onMounted(async () => {
       titles.value = await fetchElementTitles();
       tableHeaders.value = await fetchTableTitles("soldiers");
+      console.log(tableHeaders.value);
     });
 
     const form = reactive(
@@ -45,9 +67,17 @@ export default {
       )
     );
 
+    const filteredTableHeaders = computed(() => {
+      return Object.fromEntries(
+        Object.entries(tableHeaders.value).filter(
+          ([key]) => key !== "discharged"
+        )
+      );
+    });
+
     const submitForm = async () => {
       try {
-        const response = await axios.post("/saveNewSoldier");
+        const response = await axios.post("/saveNewSoldier", form);
         messageStore.show(response.data, "success");
       } catch (error) {
         console.error(error);
@@ -79,14 +109,22 @@ export default {
         const allTitles = titlesFile.default;
 
         return Object.fromEntries(
-          Object.entries(allTitles).filter(([key]) =>
-            key.startsWith(prefix + ".")
-          )
+          Object.entries(allTitles)
+            .filter(([key]) => key.startsWith(prefix + "."))
+            .map(([key, value]) => [key.slice(prefix.length + 1), value])
         );
       } catch (error) {
         console.error(`Could not load titles for language '${lang}':`, error);
         return {};
       }
+    };
+
+    const getSelectOptions = (key) => {
+      const optionsMap = {
+        active: ["active", "inactive"],
+        situation: ["armed", "unarmed"],
+      };
+      return optionsMap[key] || [];
     };
 
     return {
@@ -96,6 +134,8 @@ export default {
       submitForm,
       goBack,
       tableHeaders,
+      getSelectOptions,
+      filteredTableHeaders,
     };
   },
 };
