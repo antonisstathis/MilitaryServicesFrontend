@@ -10,12 +10,14 @@
       </div>
       <div v-if="showModal" class="modal-overlay">
         <div class="modal-content">
-          <h2>Confirm Discharge</h2>
-          <p>Are you sure you want to discharge this soldier?</p>
+          <h2>{{ titles.confirmdischarge }}</h2>
+          <p>{{ titles.confirmmessage }}</p>
           <div class="modal-actions">
-            <button class="confirm-btn" @click="confirmDischarge">Yes</button>
+            <button class="confirm-btn" @click="confirmDischarge">
+              {{ titles.yes }}
+            </button>
             <button class="cancel-btn" @click="showModal = false">
-              Cancel
+              {{ titles.cancel }}
             </button>
           </div>
         </div>
@@ -419,9 +421,20 @@ input[type="date"]:focus {
   padding: 30px;
   border-radius: 12px;
   width: 90%;
-  max-width: 400px;
+  max-width: 500px;
+  max-height: 80vh;
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  overflow-y: auto; /* enable scrolling if content is too tall */
+  word-wrap: break-word; /* ensure long words wrap */
+}
+
+.modal-content p {
+  margin-top: 15px;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: pre-wrap; /* preserves newlines */
+  overflow-wrap: break-word;
 }
 
 .modal-actions {
