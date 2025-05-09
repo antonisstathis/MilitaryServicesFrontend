@@ -8,6 +8,18 @@
           <option value="el">🇬🇷 Ελληνικά</option>
         </select>
       </div>
+      <div v-if="showModal" class="modal-overlay">
+        <div class="modal-content">
+          <h2>Confirm Discharge</h2>
+          <p>Are you sure you want to discharge this soldier?</p>
+          <div class="modal-actions">
+            <button class="confirm-btn" @click="confirmDischarge">Yes</button>
+            <button class="cancel-btn" @click="showModal = false">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
     <div id="table">
       <div class="registration-input">
@@ -24,7 +36,7 @@
             <option value="free of duty">Free of Duty</option>
             <option value="all">All</option>
           </select>
-          <button class="primary-btn" @click="dischargeSoldier()">
+          <button class="primary-btn" @click="showModal = true">
             {{ titles.dischargesoldier }}
           </button>
           <button class="primary-btn" @click="navigateTo('/soldiersList')">
@@ -75,6 +87,12 @@ export default {
     const router = useRouter();
     const messageStore = useMessageStore();
     const armedFilter = ref("all");
+    const showModal = ref(false);
+
+    const confirmDischarge = async () => {
+      showModal.value = false;
+      await dischargeSoldier();
+    };
 
     // State variables
     const soldierName = ref("");
@@ -117,6 +135,7 @@ export default {
 
     const dischargeSoldier = async () => {
       const soldierToken = localStorage.getItem("soldierToken");
+
       try {
         const response = await axios.get("dischargeSoldier", {
           params: { soldierToken: soldierToken },
@@ -213,6 +232,8 @@ export default {
       navigateTo,
       formatDate,
       dischargeSoldier,
+      confirmDischarge,
+      showModal,
     };
   },
 };
@@ -378,5 +399,52 @@ input[type="date"]:focus {
   outline: none;
   border-color: #1e3a8a;
   box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.25);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-actions {
+  margin-top: 20px;
+}
+
+.confirm-btn,
+.cancel-btn {
+  padding: 10px 20px;
+  margin: 0 10px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.confirm-btn {
+  background-color: #dc2626;
+  color: white;
+}
+
+.cancel-btn {
+  background-color: #e5e7eb;
+  color: #1f2937;
 }
 </style>
