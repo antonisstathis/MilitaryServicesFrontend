@@ -341,11 +341,15 @@ export default {
     const filteredSoldiers = computed(() => {
       if (!searchQuery.value) return soldiers.value;
 
+      const query = searchQuery.value.toLowerCase();
+      if (query === "armed") {
+        return soldiers.value.filter(
+          (soldier) => soldier.situation?.toLowerCase() === "armed"
+        );
+      }
+
       return soldiers.value.filter((soldier) =>
-        Object.values(soldier)
-          .join(" ")
-          .toLowerCase()
-          .includes(searchQuery.value.toLowerCase())
+        Object.values(soldier).join(" ").toLowerCase().includes(query)
       );
     });
 
