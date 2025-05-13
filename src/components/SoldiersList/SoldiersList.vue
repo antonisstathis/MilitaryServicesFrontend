@@ -110,6 +110,11 @@ export default {
       if (!searchQuery.value) return soldiers.value;
 
       const query = searchQuery.value.toLowerCase();
+      if (query === "armed") {
+        return soldiers.value.filter(
+          (soldier) => soldier.situation?.toLowerCase() === "armed"
+        );
+      }
 
       return soldiers.value.filter((soldier) => {
         return Object.values(soldier).some((val) =>
