@@ -178,9 +178,14 @@ export default {
         selectedServices.value = [];
         messageStore.show(response.data, "success");
       } catch (error) {
-        console.error("Failed to delete services:", error);
         messageStore.show(
-          "An error occurred while deleting services.",
+          error.response.data ||
+            "You are not authorized to add or delete services.",
+          "error"
+        );
+        console.error(
+          error.response.data ||
+            "You are not authorized to add or delete services.",
           "error"
         );
       }
