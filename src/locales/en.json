@@ -71,6 +71,10 @@
   "lastcalc.date": "Date",
   "lastcalc.armed": "Armed",
 
+  "statisticselement.armedservicesarmedsold": "Armed Services - Armed Soldiers",
+  "statisticselement.unarmedservicesarmedsold": " Unarmed Services - Armed Soldiers",
+  "statisticselement.unarmedservicesunarmedsold": "Unarmed Services - Unarmed Soldiers",
+  "statisticselement.freeofdutyallsold": "Free of Duty - All Soldiers",
   "statisticselement.back": "Back",
   "statistics.registration": "Registration Number",
   "statistics.company": "Company",

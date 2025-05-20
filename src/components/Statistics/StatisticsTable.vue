@@ -7,16 +7,16 @@
       @change="fetchServices"
     >
       <option value="ARMED_SERVICES_ARMED_SOLDIERS">
-        Armed Services - Armed Soldiers
+        {{ titles.armedservicesarmedsold }}
       </option>
       <option value="UNARMED_SERVICES_ARMED_SOLDIERS">
-        Unarmed Services - Armed Soldiers
+        {{ titles.unarmedservicesarmedsold }}
       </option>
       <option value="UNARMED_SERVICES_UNARMED_SOLDIERS">
-        Unarmed Services - Unarmed Soldiers
+        {{ titles.unarmedservicesunarmedsold }}
       </option>
       <option value="FREE_OF_DUTY_SERVICES_ALL_SOLDIERS">
-        Free of Duty - All Soldiers
+        {{ titles.freeofdutyallsold }}
       </option>
     </select>
     <button class="primary-btn" @click="navigateTo('/home')">

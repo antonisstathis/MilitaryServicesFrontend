@@ -82,6 +82,11 @@
   "soldierdto.onduty": "εν υπηρεσία",
   "soldierdto.discharged": "αποστρατευμένος",
 
+  "statisticselement.armedservicesarmedsold": "Ένοπλοι Στρατιώτες - Ένοπλες Υπηρεσίες",
+  "statisticselement.unarmedservicesarmedsold": "Ένοπλοι Στρατιώτες - Άοπλες υπηρεσίες",
+  "statisticselement.unarmedservicesunarmedsold": "Άοπλοι Στρατιώτες - ΄Άοπλες υπηρεσίες",
+  "statisticselement.freeofdutyallsold": "Έξοδοι - Όλοι",
+  "statisticselement.back": "Επιστροφή",
   "statistics.registration": "ΑΣΜ",
   "statistics.company": "Λόχος",
   "statistics.name": "Όνομα",
