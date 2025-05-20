@@ -37,9 +37,9 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="service in services" :key="service.id">
+        <tr v-for="soldier in soldiers" :key="soldier.id">
           <td
-            v-for="[key, value] in Object.entries(service).filter(
+            v-for="[key, value] in Object.entries(soldier).filter(
               ([key]) => key !== 'id'
             )"
             :key="key"
@@ -65,7 +65,7 @@ export default {
     const unitName = ref("");
     const tableHeaders = ref([]);
     const titles = ref({});
-    const services = ref({});
+    const soldiers = ref({});
     const selectedOption = ref("ARMED_SERVICES_ARMED_SOLDIERS");
     const messageStore = useMessageStore();
 
@@ -133,6 +133,51 @@ export default {
       }
     };
 
+    const setTableDataBasedOnLang = async (soldiers) => {
+      const lang = localStorage.getItem("lang") || "en";
+      if (lang === "en") return soldiers;
+      const titlesFile = await import(`@/locales/${lang}.json`);
+
+      const keys = [
+        "soldierdto.active",
+        "soldierdto.freeofduty",
+        "soldierdto.armed",
+        "soldierdto.unarmed",
+        "soldierdto.armedser",
+        "soldierdto.unarmedser",
+        "soldierdto.onduty",
+        "soldierdto.discharged",
+      ];
+
+      const translations = keys.reduce((obj, key) => {
+        if (key in titlesFile) obj[key.slice(11)] = titlesFile[key];
+        return obj;
+      }, {});
+
+      soldiers.forEach((soldier) => {
+        const fields = ["situation", "active"];
+
+        fields.forEach((field) => {
+          const value = soldier[field];
+
+          if (!(field in soldier)) return;
+
+          soldier[field] =
+            field === "situation" && value === "armed"
+              ? translations["armed"]
+              : field === "situation" && value === "unarmed"
+              ? translations["unarmed"]
+              : field === "active" && value === "active"
+              ? translations["active"]
+              : field === "active" && value === "free of duty"
+              ? translations["freeofduty"]
+              : value; // default to original if no match
+        });
+      });
+
+      return soldiers;
+    };
+
     const fetchServices = async () => {
       try {
         const response = await axios.get("getSoldiersStatistics", {
@@ -140,7 +185,8 @@ export default {
             statisticalDataOption: selectedOption.value,
           },
         });
-        if (response.data.length) services.value = Object.values(response.data);
+        if (response.data.length) soldiers.value = Object.values(response.data);
+        setTableDataBasedOnLang(soldiers.value);
       } catch (error) {
         console.error(error);
         if (error.response?.status === 401) router.push("/signIn");
@@ -159,8 +205,9 @@ export default {
       fetchElementTitles,
       titles,
       fetchServices,
-      services,
+      soldiers,
       selectedOption,
+      setTableDataBasedOnLang,
     };
   },
 };
