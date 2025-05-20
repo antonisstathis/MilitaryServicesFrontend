@@ -8,8 +8,20 @@
         <li>
           <router-link to="/personnel">{{ titles.personnel }}</router-link>
         </li>
-        <li>
+        <li
+          @mouseenter="showSubmenu = true"
+          @mouseleave="showSubmenu = false"
+          style="position: relative"
+        >
           <router-link to="/soldiersList">{{ titles.soldiers }}</router-link>
+          <ul v-show="showSubmenu" class="submenu">
+            <li @click="navigateTo('/soldiersList')">
+              {{ titles.soldiersList }}
+            </li>
+            <li @click="navigateTo('/soldiersStats')">
+              {{ titles.statistics }}
+            </li>
+          </ul>
         </li>
         <li>
           <router-link to="/servicesOfUnit">{{ titles.services }}</router-link>
@@ -106,6 +118,7 @@ export default {
     let lastDate;
     const selectedDate = ref("");
     const searchQuery = ref("");
+    const showSubmenu = ref(false);
 
     // Lifecycle hooks
     onMounted(async () => {
@@ -372,6 +385,7 @@ export default {
       selectedDate,
       filteredSoldiers,
       searchQuery,
+      showSubmenu,
     };
   },
 };
@@ -568,5 +582,64 @@ input[type="date"]:focus {
   height: 40px;
   box-sizing: border-box;
   width: 250px;
+}
+
+/* Enhanced submenu styles */
+.submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  padding: 10px 0;
+  margin-top: 12px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.25s ease-in-out;
+}
+
+/* Make it appear when triggered */
+li:hover > .submenu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Submenu item styles */
+.submenu li {
+  padding: 8px 16px;
+  white-space: nowrap;
+  font-size: 1rem;
+  color: #1e3a8a;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-weight: 600; /* Make text thicker */
+  line-height: 1.4; /* Optional: adjust line height for balance */
+}
+
+.submenu li::after {
+  content: "→";
+  position: absolute;
+  right: 16px;
+  opacity: 0;
+  transform: translateX(-5px);
+  transition: all 0.3s ease;
+}
+
+.submenu li:hover {
+  background-color: #f0fdf4;
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.submenu li:hover::after {
+  opacity: 1;
+  transform: translateX(0);
 }
 </style>

@@ -2,6 +2,8 @@
   "element.home": "Home",
   "element.personnel": "Personnel",
   "element.soldiers": "Soldiers",
+  "element.soldiersList": "List of Soldiers",
+  "element.statistics": "Statistics",
   "element.services": "Services",
   "element.newservices": "New Services",
   "element.servicesofunit": "Services Of Unit",
@@ -67,5 +69,14 @@
   "lastcalc.active": "Active",
   "lastcalc.service": "Service",
   "lastcalc.date": "Date",
-  "lastcalc.armed": "Armed"
+  "lastcalc.armed": "Armed",
+
+  "statisticselement.back": "Back",
+  "statistics.registration": "Registration Number",
+  "statistics.company": "Company",
+  "statistics.name": "Name",
+  "statistics.surname": "Surname",
+  "statistics.active": "Active",
+  "statistics.situation": "Situation",
+  "statistics.numberofser": "Number Of Services"
 }
