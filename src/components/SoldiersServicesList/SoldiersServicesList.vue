@@ -318,7 +318,11 @@ export default {
 
     const newServices = async () => {
       try {
-        const response = await axios.get("calc");
+        const response = await axios.get("calc", {
+          params: {
+            lastDate: lastDate,
+          },
+        });
         fetchSoldiers();
         messageStore.show(response.data, "success", 3000);
       } catch (error) {
