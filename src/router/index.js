@@ -17,6 +17,11 @@ const router = createRouter({
       component: SoldiersServicesList,
     },
     {
+      path: "/personnel",
+      name: "personnel",
+      component: SoldiersServicesList,
+    },
+    {
       path: "/soldiersList",
       name: "soldiersList",
       component: SoldiersList,
@@ -53,7 +58,7 @@ const router = createRouter({
     },
     {
       path: "/:pathMatch(.*)*",
-      redirect: "/home",
+      redirect: "/signIn",
     },
   ],
 });
