@@ -55,7 +55,7 @@
           >
             <td
               v-for="[key, value] in Object.entries(soldier).filter(
-                ([key]) => key !== 'token'
+                ([key]) => key !== 'token' && key !== 'personnel'
               )"
               :key="key"
             >
@@ -136,9 +136,13 @@ export default {
     };
 
     const fetchSoldiers = async () => {
+      const selection = localStorage.getItem("personnel");
+      const isPersonnel = getCurrentSelection(selection);
       tableHeaders.value = await fetchTableTitles("soldiers");
       try {
-        const response = await axios.get("getSoldiersOfUnit", {});
+        const response = await axios.get("getSoldiersOfUnit", {
+          params: { isPersonnel: isPersonnel },
+        });
         const data = await setTableDataBasedOnLang(response.data);
         if (data.length) soldiers.value = Object.values(data);
       } catch (error) {
@@ -262,6 +266,10 @@ export default {
       router.push(path);
     };
 
+    const getCurrentSelection = (selection) => {
+      return selection === "soldiers" ? false : true;
+    };
+
     return {
       unitName,
       soldiers,
@@ -280,6 +288,7 @@ export default {
       searchQuery,
       filteredSoldiers,
       findSoldierByRegistrationNumber,
+      getCurrentSelection,
     };
   },
 };

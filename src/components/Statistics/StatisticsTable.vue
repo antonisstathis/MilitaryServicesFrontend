@@ -180,9 +180,12 @@ export default {
 
     const fetchServices = async () => {
       try {
+        const selection = localStorage.getItem("personnel");
+        const isPersonnel = getCurrentSelection(selection);
         const response = await axios.get("getSoldiersStatistics", {
           params: {
             statisticalDataOption: selectedOption.value,
+            isPersonnel: isPersonnel,
           },
         });
         if (response.data.length) soldiers.value = Object.values(response.data);
@@ -198,6 +201,10 @@ export default {
       router.push(path);
     };
 
+    const getCurrentSelection = (selection) => {
+      return selection === "soldiers" ? false : true;
+    };
+
     return {
       unitName,
       tableHeaders,
@@ -208,6 +215,7 @@ export default {
       soldiers,
       selectedOption,
       setTableDataBasedOnLang,
+      getCurrentSelection,
     };
   },
 };

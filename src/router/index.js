@@ -12,6 +12,11 @@ const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes: [
     {
+      path: "/",
+      name: "app",
+      component: LoginPage,
+    },
+    {
       path: "/home",
       name: "home",
       component: SoldiersServicesList,

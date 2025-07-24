@@ -7,18 +7,39 @@
     <button class="primary-btn" @click="deleteSelectedServices">
       {{ titles.deleteservices }}
     </button>
-    <button class="primary-btn" @click="fetchServicesOfUnit">
+    <button
+      class="primary-btn"
+      @click="fetchServicesOfUnit(null, getCurrentSelection())"
+    >
       {{ titles.currentservices }}
     </button>
     <button class="primary-btn" @click="navigateTo('/home')">
       {{ titles.back }}
     </button>
-    <input
-      type="date"
-      id="date"
-      v-model="selectedDate"
-      @change="fetchServicesOfUnit($event)"
-    />
+    <div class="date-toggle-wrapper">
+      <input
+        type="date"
+        id="date"
+        v-model="selectedDate"
+        @change="fetchServicesOfUnit($event, getCurrentSelection())"
+      />
+      <div class="dual-toggle">
+        <div
+          :class="['toggle-option', activeList === 'personnel' ? 'active' : '']"
+          @click="switchList('personnel')"
+          title="Load Personnel"
+        >
+          👥
+        </div>
+        <div
+          :class="['toggle-option', activeList === 'soldiers' ? 'active' : '']"
+          @click="switchList('soldiers')"
+          title="Load Soldiers"
+        >
+          🪖
+        </div>
+      </div>
+    </div>
   </div>
   <div id="table">
     <table>
@@ -132,10 +153,11 @@ export default {
     const titles = ref({});
     const selectedDate = ref("");
     const messageStore = useMessageStore();
+    const activeList = ref("soldiers");
 
     onMounted(async () => {
       getNameOfUnit();
-      fetchServicesOfUnit();
+      fetchServicesOfUnit(null, getCurrentSelection());
       titles.value = await fetchElementTitles();
     });
 
@@ -178,16 +200,7 @@ export default {
         selectedServices.value = [];
         messageStore.show(response.data, "success");
       } catch (error) {
-        messageStore.show(
-          error.response.data ||
-            "You are not authorized to add or delete services.",
-          "error"
-        );
-        console.error(
-          error.response.data ||
-            "You are not authorized to add or delete services.",
-          "error"
-        );
+        handleError(error);
       }
     };
 
@@ -201,20 +214,15 @@ export default {
           selectedNumberOfGuards: selectedNumberOfGuards.value,
         };
 
-        const response = await axios.post("saveNewServices", payload);
+        const isPersonnel = getCurrentSelection();
+        const response = await axios.post("saveNewServices", payload, {
+          params: { isPersonnel: isPersonnel },
+        });
         showPopup.value = false;
-        fetchServicesOfUnit();
+        fetchServicesOfUnit(null, getCurrentSelection());
         messageStore.show(response.data, "success");
       } catch (error) {
-        if (error.response) {
-          messageStore.show(
-            error.response.data ||
-              "You are not authorized to add or delete services.",
-            "error"
-          );
-        }
-        console.error("Request failed:", error);
-        if (error.response?.status === 401) router.push("/signIn");
+        handleError(error);
       }
       showPopup.value = false;
     };
@@ -230,16 +238,26 @@ export default {
         const response = await axios.get("getNameOfUnit");
         unitName.value = response.data;
       } catch (error) {
-        console.error(error);
-        if (error.response?.status === 401) {
-          router.push("/signIn");
-        } else {
-          messageStore.show(
-            error.response.data ||
-              "You are not authorized to add or delete services.",
-            "error"
-          );
-        }
+        handleError(error);
+      }
+    };
+
+    const getDateOfLastCalculation = async () => {
+      const jwtToken = localStorage.getItem("jwtToken");
+      const isPersonnel = getCurrentSelection();
+      if (!jwtToken) {
+        router.push("/signIn");
+        return;
+      }
+
+      try {
+        const response = await axios.get("getLastCalcDate", {
+          params: { isPersonnel: isPersonnel },
+        });
+        const dateOflastCalc = response.data;
+        return dateOflastCalc;
+      } catch (error) {
+        handleError(error);
       }
     };
 
@@ -261,42 +279,61 @@ export default {
       }
     };
 
-    const fetchServicesOfUnit = async (event = null) => {
-      tableHeaders.value = await fetchTableTitles("serofunit");
+    const fetchServicesOfUnit = async (event = null, isPersonnel) => {
       const jwtToken = localStorage.getItem("jwtToken");
-
-      const selDate =
-        event && event.type !== "click" ? new Date(event.target.value) : null;
-
-      selectedDate.value =
-        event && event.type !== "click"
-          ? selectedDate.value
-          : new Date().toISOString().split("T")[0];
-
       if (!jwtToken) {
         router.push("/signIn");
         return;
       }
+
+      tableHeaders.value = await fetchTableTitles("serofunit");
+      const isChangeDateEvent = event && event.type === "change";
+      let dateOfServices;
+      if (!isChangeDateEvent) {
+        const rawDate = await getDateOfLastCalculation();
+        dateOfServices = new Date(rawDate).toLocaleDateString("en-CA");
+      }
+      if (isChangeDateEvent) {
+        dateOfServices = new Date(event.target.value).toLocaleDateString(
+          "en-CA"
+        );
+      }
+      selectedDate.value = dateOfServices;
+
       try {
         const response = await axios.get("getServices", {
-          params: { date: selDate },
+          params: { date: dateOfServices, isPersonnel: isPersonnel },
         });
         const data = response.data;
         if (data.length) {
           services.value = data;
         }
       } catch (error) {
-        console.error(error);
-        if (error.response?.status === 401) {
-          router.push("/signIn");
-        } else {
-          messageStore.show(
-            error.response.data ||
-              "You are not authorized to add or delete services.",
-            "error"
-          );
-        }
+        handleError(error);
       }
+    };
+
+    const handleError = (error) => {
+      console.error(error);
+      if (error.response?.status === 401) {
+        router.push("/signIn");
+      } else {
+        messageStore.show(
+          error.response.data ||
+            "You are not authorized to add or delete services.",
+          "error"
+        );
+      }
+    };
+
+    const switchList = (listType) => {
+      activeList.value = listType;
+      if (listType === "soldiers") fetchServicesOfUnit(null, false);
+      else fetchServicesOfUnit(null, true);
+    };
+
+    const getCurrentSelection = () => {
+      return activeList.value === "soldiers" ? false : true;
     };
 
     const navigateTo = (path) => {
@@ -322,6 +359,11 @@ export default {
       fetchServicesOfUnit,
       titles,
       selectedDate,
+      getDateOfLastCalculation,
+      handleError,
+      activeList,
+      switchList,
+      getCurrentSelection,
     };
   },
 };
@@ -486,5 +528,51 @@ input[type="date"]:focus {
 .popup-content select:focus {
   border-color: #22c55e; /* match your primary color */
   outline: none;
+}
+
+/* Wrapper for date and toggle */
+.date-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Dual toggle switch */
+.dual-toggle {
+  display: flex;
+  border: 2px solid #1e3a8a;
+  border-radius: 999px;
+  overflow: hidden;
+  height: 42px;
+  background: #f9fafb;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  font-weight: bold;
+  min-width: 120px;
+}
+
+.toggle-option {
+  flex: 1;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #1e3a8a;
+  font-size: 1rem;
+  transition: background-color 0.3s, color 0.3s;
+  position: relative;
+  white-space: nowrap;
+}
+
+.toggle-option:hover {
+  background-color: #e0f2fe;
+}
+
+.toggle-option.active {
+  background-color: #22c55e;
+  color: white;
 }
 </style>

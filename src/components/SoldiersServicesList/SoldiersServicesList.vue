@@ -42,7 +42,7 @@
       <button class="primary-btn" @click="navigateTo('/servicesOfUnit')">
         {{ titles.servicesofunit }}
       </button>
-      <button class="primary-btn" @click="fetchSoldiers">
+      <button class="primary-btn" @click="fetchSoldiers(getCurrentSelection())">
         {{ titles.lastservices }}
       </button>
       <button class="logout-btn" @click="logout">
@@ -63,6 +63,29 @@
           v-model="selectedDate"
           @change="fetchPrevCalculation($event)"
         />
+
+        <div class="dual-toggle">
+          <div
+            :class="[
+              'toggle-option',
+              activeList === 'personnel' ? 'active' : '',
+            ]"
+            @click="switchList('personnel')"
+            title="Load Personnel"
+          >
+            👥
+          </div>
+          <div
+            :class="[
+              'toggle-option',
+              activeList === 'soldiers' ? 'active' : '',
+            ]"
+            @click="switchList('soldiers')"
+            title="Load Soldiers"
+          >
+            🪖
+          </div>
+        </div>
       </div>
       <table>
         <thead>
@@ -111,6 +134,8 @@ export default {
     // State variables
     const unitName = ref("");
     const soldiers = ref([]);
+    const personnel = ref([]);
+    const activeList = ref("soldiers");
     const tableHeaders = ref([]);
     const titles = ref({});
     const locale = ref(localStorage.getItem("lang") || "en");
@@ -119,12 +144,17 @@ export default {
     const selectedDate = ref("");
     const searchQuery = ref("");
     const showSubmenu = ref(false);
+    const toggleState = ref(false);
 
     // Lifecycle hooks
     onMounted(async () => {
       getNameOfUnit();
       getFirstDateCalc();
-      fetchSoldiers();
+      fetchSoldiers(false);
+      fetchSoldiers(true);
+      const personnelValue = localStorage.getItem("personnel");
+      if (personnelValue) switchList(personnelValue);
+      else localStorage.setItem("personnel", "soldiers");
       titles.value = await fetchElementTitles();
     });
 
@@ -134,8 +164,7 @@ export default {
         const response = await axios.get("getNameOfUnit");
         unitName.value = response.data;
       } catch (error) {
-        console.error(error);
-        if (error.response?.status === 401) router.push("/signIn");
+        handleError(error);
       }
     };
 
@@ -156,30 +185,39 @@ export default {
         const response = await axios.get("getFirstCalcDate");
         firstDate = new Date(response.data);
       } catch (error) {
-        console.error(error);
-        if (error.response?.status === 401) router.push("/signIn");
+        handleError(error);
       }
     };
 
-    const fetchSoldiers = async () => {
+    const switchList = (listType) => {
+      localStorage.setItem("personnel", listType);
+      activeList.value = listType;
+      if (listType === "soldiers") fetchSoldiers(false);
+      else fetchSoldiers(true);
+    };
+
+    const fetchSoldiers = async (isPersonnel) => {
       tableHeaders.value = await fetchTableTitles("lastcalc");
       try {
-        const response = await axios.get("getSoldiers", {});
+        const response = await axios.get("getSoldiers", {
+          params: { isPersonnel: isPersonnel },
+        });
         const data = await setTableDataBasedOnLang(response.data);
         localStorage.setItem("selectedDate", lastDate);
-        if (data.length) soldiers.value = Object.values(data);
+        if (data.length && !isPersonnel) soldiers.value = Object.values(data);
+        if (data.length && isPersonnel) personnel.value = Object.values(data);
 
-        const dateValue = soldiers.value[0]?.date;
+        const dateValue = isPersonnel
+          ? personnel.value[0]?.date
+          : soldiers.value[0]?.date;
         if (dateValue) {
           const formattedDate = dateValue.split("-").reverse().join("-");
           const date = new Date(formattedDate);
           lastDate = date;
-          selectedDate.value = date.toISOString().split("T")[0];
+          selectedDate.value = date.toLocaleDateString("en-CA");
         }
       } catch (error) {
-        console.error(error);
-        if (error.response?.status === 401) router.push("/signIn");
-        messageStore.show(error.response.data, "error");
+        handleError(error);
       }
     };
 
@@ -191,7 +229,7 @@ export default {
           typeof lastSelectedDate === "string"
             ? new Date(lastSelectedDate)
             : lastSelectedDate;
-        selectedDate.value = dateToSet.toISOString().split("T")[0];
+        selectedDate.value = dateToSet.toLocaleDateString("en-CA");
         messageStore.show(
           `The date you selected is out of this period (${firstDate},${lastDate}.)`,
           "error",
@@ -205,13 +243,14 @@ export default {
     const changeLanguage = async () => {
       localStorage.setItem("lang", locale.value);
 
+      const isPersonnel = getCurrentSelection();
       const selDate =
         typeof selectedDate.value === "string"
           ? new Date(selectedDate.value)
           : selectedDate.value;
       if (lastDate && selDate && !isSameDay(selDate, lastDate))
         fetchPrevCalculationData(selectedDate.value);
-      else fetchSoldiers();
+      else fetchSoldiers(isPersonnel);
       titles.value = await fetchElementTitles();
     };
 
@@ -219,19 +258,19 @@ export default {
       tableHeaders.value = await fetchTableTitles("prevcalc");
       localStorage.setItem("selectedDate", selDate);
       try {
+        const isPersonnel = getCurrentSelection();
         selectedDate.value =
           typeof selDate === "string"
             ? selDate
-            : selDate.toISOString().split("T")[0];
+            : selDate.toLocaleDateString("en-CA");
         const response = await axios.get("getPreviousCalculation", {
-          params: { date: selDate },
+          params: { date: selDate, isPersonnel: isPersonnel },
         });
         const data = await setTableDataBasedOnLang(response.data);
-        if (data.length) soldiers.value = Object.values(data);
+        if (data.length && isPersonnel) personnel.value = Object.values(data);
+        if (data.length && !isPersonnel) soldiers.value = Object.values(data);
       } catch (error) {
-        console.error(error);
-        if (error.response?.status === 401) router.push("/signIn");
-        messageStore.show(error.response.data, "error");
+        handleError(error);
       }
     };
 
@@ -318,17 +357,17 @@ export default {
 
     const newServices = async () => {
       try {
+        const isPersonnel = getCurrentSelection();
         const response = await axios.get("calc", {
           params: {
             lastDate: lastDate,
+            isPersonnel: isPersonnel,
           },
         });
-        fetchSoldiers();
+        fetchSoldiers(isPersonnel);
         messageStore.show(response.data, "success", 3000);
       } catch (error) {
-        console.error(error);
-        if (error.response?.status === 401) router.push("/signIn");
-        messageStore.show(error.response.data, "error");
+        handleError(error);
       }
     };
 
@@ -341,8 +380,7 @@ export default {
         localStorage.setItem("formData", JSON.stringify(response.data));
         router.push("/soldierForm");
       } catch (error) {
-        console.error("Request failed:", error);
-        if (error.response?.status === 401) router.push("/signIn");
+        handleError(error);
       }
     };
 
@@ -351,21 +389,32 @@ export default {
       router.push("/signIn");
     };
 
+    const handleError = (error) => {
+      console.error(error);
+      if (error.response?.status === 401) router.push("/signIn");
+      messageStore.show(error.response.data, "error");
+    };
+
     const navigateTo = (path) => {
       router.push(path);
     };
 
+    const getCurrentSelection = () => {
+      return activeList.value === "soldiers" ? false : true;
+    };
+
     const filteredSoldiers = computed(() => {
-      if (!searchQuery.value) return soldiers.value;
+      const list = getCurrentSelection() ? personnel : soldiers;
+      if (!searchQuery.value) return list.value;
 
       const query = searchQuery.value.toLowerCase();
       if (query === "armed") {
-        return soldiers.value.filter(
+        return list.value.filter(
           (soldier) => soldier.situation?.toLowerCase() === "armed"
         );
       }
 
-      return soldiers.value.filter((soldier) =>
+      return list.value.filter((soldier) =>
         Object.values(soldier).join(" ").toLowerCase().includes(query)
       );
     });
@@ -373,6 +422,8 @@ export default {
     return {
       unitName,
       soldiers,
+      personnel,
+      activeList,
       tableHeaders,
       titles,
       locale,
@@ -381,6 +432,7 @@ export default {
       getNameOfUnit,
       fetchTableTitles,
       fetchSoldiers,
+      switchList,
       fetchPrevCalculation,
       newServices,
       selectSoldier,
@@ -390,6 +442,9 @@ export default {
       filteredSoldiers,
       searchQuery,
       showSubmenu,
+      toggleState,
+      handleError,
+      getCurrentSelection,
     };
   },
 };
@@ -645,5 +700,38 @@ li:hover > .submenu {
 .submenu li:hover::after {
   opacity: 1;
   transform: translateX(0);
+}
+
+.dual-toggle {
+  display: flex;
+  margin-left: 10px;
+  border: 2px solid #1e3a8a;
+  border-radius: 999px;
+  overflow: hidden;
+  height: 42px;
+  background: #f9fafb;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-option {
+  flex: 1;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #1e3a8a;
+  font-size: 1.2rem;
+  transition: background-color 0.3s, color 0.3s;
+  position: relative;
+}
+
+.toggle-option:hover {
+  background-color: #e0f2fe;
+}
+
+.toggle-option.active {
+  background-color: #22c55e;
+  color: white;
 }
 </style>
