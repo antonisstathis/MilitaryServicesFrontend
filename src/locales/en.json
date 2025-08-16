@@ -51,6 +51,7 @@
   "serofunit.Armed": "Armed",
   "serofunit.Description": "Description",
   "serofunit.Shift": "Shift",
+  "serofunit.group": "Group",
 
   "prevcalc.registration": "Registration Number",
   "prevcalc.company": "Company",
