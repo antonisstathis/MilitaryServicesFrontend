@@ -373,8 +373,20 @@ export default {
 
     const selectSoldier = async (soldier) => {
       const lang = localStorage.getItem("lang");
+
+      const filteredSoldier = Object.fromEntries(
+        Object.entries(soldier).filter(
+          ([key]) =>
+            key !== "date" &&
+            key !== "armed" &&
+            key !== "service" &&
+            key !== "company"
+        )
+      );
+      filteredSoldier["group"] = "A";
+
       try {
-        const response = await axios.post("getSoldier", soldier, {
+        const response = await axios.post("getSoldier", filteredSoldier, {
           params: { lang },
         });
         localStorage.setItem("formData", JSON.stringify(response.data));

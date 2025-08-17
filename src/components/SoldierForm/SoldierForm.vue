@@ -31,6 +31,15 @@
           <option value="free of duty">free of duty</option>
         </select>
 
+        <select id="groupSelect" v-model="soldier.group">
+          <option value="" disabled selected>Select an option</option>
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+        </select>
+
         <button type="submit">Save</button>
         <button @click="goToSoldierForm" class="back-btn">Back</button>
       </form>
@@ -53,6 +62,7 @@ export default {
       surname: "",
       situation: "",
       active: "",
+      group: "",
     });
 
     onMounted(() => {
@@ -71,6 +81,7 @@ export default {
 
     const saveSoldier = async () => {
       try {
+        console.log(soldier.value);
         await axios.post("changeSoldSituation", soldier.value);
         router.push("/home");
       } catch (error) {
