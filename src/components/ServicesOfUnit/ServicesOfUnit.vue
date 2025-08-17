@@ -122,6 +122,18 @@
         </select>
       </label>
 
+      <label>
+        Group:
+        <select v-model="group">
+          <option disabled value="">Please select</option>
+          <option>A</option>
+          <option>B</option>
+          <option>C</option>
+          <option>D</option>
+          <option>E</option>
+        </select>
+      </label>
+
       <div class="popup-buttons">
         <button class="primary-btn" @click="saveServices">Save</button>
         <button class="primary-btn" @click="showPopup = false">Cancel</button>
@@ -149,6 +161,7 @@ export default {
     const description = ref("");
     const shift = ref("");
     const selectedNumberOfGuards = ref("");
+    const group = ref("");
     const selectedServices = ref([]);
     const titles = ref({});
     const selectedDate = ref("");
@@ -212,6 +225,7 @@ export default {
           description: description.value,
           shift: shift.value,
           selectedNumberOfGuards: selectedNumberOfGuards.value,
+          group: group.value,
         };
 
         const isPersonnel = getCurrentSelection();
@@ -352,6 +366,7 @@ export default {
       description,
       shift,
       selectedNumberOfGuards,
+      group,
       selectedServices,
       toggleSelection,
       deleteSelectedServices,
