@@ -14,7 +14,7 @@
         <label :for="key">{{ label }}</label>
 
         <select
-          v-if="key === 'situation' || key === 'active'"
+          v-if="key === 'situation' || key === 'active' || key === 'group'"
           :id="key"
           v-model="form[key]"
           required
@@ -58,7 +58,6 @@ export default {
     onMounted(async () => {
       titles.value = await fetchElementTitles();
       tableHeaders.value = await fetchTableTitles("soldiers");
-      console.log(tableHeaders.value);
     });
 
     const form = reactive(
@@ -123,6 +122,7 @@ export default {
       const optionsMap = {
         active: ["active", "inactive"],
         situation: ["armed", "unarmed"],
+        group: ["A", "B", "C", "D", "E"],
       };
       return optionsMap[key] || [];
     };
