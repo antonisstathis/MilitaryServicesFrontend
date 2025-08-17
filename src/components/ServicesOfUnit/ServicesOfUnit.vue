@@ -224,6 +224,7 @@ export default {
           armed: armed.value,
           description: description.value,
           shift: shift.value,
+          numberOfGuards: selectedNumberOfGuards.value,
           group: group.value,
         };
 
@@ -231,7 +232,6 @@ export default {
         const response = await axios.post("saveNewServices", payload, {
           params: {
             isPersonnel: isPersonnel,
-            numberOfGuards: selectedNumberOfGuards.value,
           },
         });
         showPopup.value = false;
