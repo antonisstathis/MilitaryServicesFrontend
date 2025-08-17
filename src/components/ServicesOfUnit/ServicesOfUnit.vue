@@ -220,17 +220,19 @@ export default {
     const saveServices = async () => {
       try {
         const payload = {
-          nameOfService: nameOfService.value,
+          service: nameOfService.value,
           armed: armed.value,
           description: description.value,
           shift: shift.value,
-          selectedNumberOfGuards: selectedNumberOfGuards.value,
           group: group.value,
         };
 
         const isPersonnel = getCurrentSelection();
         const response = await axios.post("saveNewServices", payload, {
-          params: { isPersonnel: isPersonnel },
+          params: {
+            isPersonnel: isPersonnel,
+            numberOfGuards: selectedNumberOfGuards.value,
+          },
         });
         showPopup.value = false;
         fetchServicesOfUnit(null, getCurrentSelection());
