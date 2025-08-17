@@ -63,7 +63,7 @@
         >
           <td
             v-for="[key, value] in Object.entries(service).filter(
-              ([key]) => key !== 'id'
+              ([key]) => key !== 'id' && key !== 'numberOfGuards'
             )"
             :key="key"
           >
