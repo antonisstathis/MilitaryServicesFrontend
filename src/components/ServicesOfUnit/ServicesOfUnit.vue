@@ -203,9 +203,7 @@ export default {
         }
 
         const idsToDelete = selectedServices.value.map((service) => service.id);
-        const response = await axios.post("deleteServices", {
-          ids: idsToDelete,
-        });
+        const response = await axios.post("deleteServices", idsToDelete);
 
         services.value = services.value.filter(
           (service) => !idsToDelete.includes(service.id)
