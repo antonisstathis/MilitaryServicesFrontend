@@ -5,8 +5,20 @@
         <li>
           <router-link to="/home">{{ titles.home }}</router-link>
         </li>
-        <li>
-          <router-link to="/personnel">{{ titles.personnel }}</router-link>
+        <li
+          @mouseenter="showSubmenu = true"
+          @mouseleave="showSubmenu = false"
+          style="position: relative"
+        >
+          <router-link to="/soldiersList">{{ titles.personnel }}</router-link>
+          <ul v-show="showSubmenu" class="submenu">
+            <li @click="goToPersonnelList()">
+              {{ titles.soldiersList }}
+            </li>
+            <li @click="goToPersonnelStats()">
+              {{ titles.statistics }}
+            </li>
+          </ul>
         </li>
         <li
           @mouseenter="showSubmenu = true"
@@ -15,10 +27,10 @@
         >
           <router-link to="/soldiersList">{{ titles.soldiers }}</router-link>
           <ul v-show="showSubmenu" class="submenu">
-            <li @click="navigateTo('/soldiersList')">
+            <li @click="goToSoldiersList()">
               {{ titles.soldiersList }}
             </li>
-            <li @click="navigateTo('/soldiersStats')">
+            <li @click="goToSoldiersStats()">
               {{ titles.statistics }}
             </li>
           </ul>
@@ -407,6 +419,26 @@ export default {
       messageStore.show(error.response.data, "error");
     };
 
+    const goToPersonnelList = () => {
+      localStorage.setItem("personnel", "personnel");
+      navigateTo("/soldiersList");
+    };
+
+    const goToSoldiersList = () => {
+      localStorage.setItem("personnel", "soldiers");
+      navigateTo("/soldiersList");
+    };
+
+    const goToPersonnelStats = () => {
+      localStorage.setItem("personnel", "personnel");
+      navigateTo("/soldiersStats");
+    };
+
+    const goToSoldiersStats = () => {
+      localStorage.setItem("personnel", "soldiers");
+      navigateTo("/soldiersStats");
+    };
+
     const navigateTo = (path) => {
       router.push(path);
     };
@@ -449,6 +481,10 @@ export default {
       newServices,
       selectSoldier,
       logout,
+      goToPersonnelList,
+      goToSoldiersList,
+      goToPersonnelStats,
+      goToSoldiersStats,
       navigateTo,
       selectedDate,
       filteredSoldiers,
