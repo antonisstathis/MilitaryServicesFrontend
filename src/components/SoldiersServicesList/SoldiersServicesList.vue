@@ -13,7 +13,7 @@
           <router-link to="/soldiersList">{{ titles.personnel }}</router-link>
           <ul v-show="showSubmenu" class="submenu">
             <li @click="goToPersonnelList()">
-              {{ titles.soldiersList }}
+              {{ titles.personnelList }}
             </li>
             <li @click="goToPersonnelStats()">
               {{ titles.statistics }}
