@@ -99,7 +99,7 @@
           </div>
         </div>
       </div>
-      <table>
+      <table id="soldiers-table">
         <thead>
           <tr>
             <th
@@ -137,6 +137,9 @@ import { ref, onMounted, computed } from "vue";
 import axios from "axios";
 import { useRouter } from "vue-router";
 import { useMessageStore } from "@/stores/useMessageStore";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { nextTick } from "vue";
 
 export default {
   setup() {
@@ -378,9 +381,144 @@ export default {
         });
         fetchSoldiers(isPersonnel);
         messageStore.show(response.data, "success", 3000);
+
+        await nextTick();
+        await new Promise((r) => setTimeout(r, 400));
+        await fetchAndGenerateStatisticsPDF();
       } catch (error) {
         handleError(error);
       }
+    };
+
+    const fetchAndGenerateStatisticsPDF = async () => {
+      const options = [
+        "ARMED_SERVICES_ARMED_SOLDIERS",
+        "UNARMED_SERVICES_ARMED_SOLDIERS",
+        "UNARMED_SERVICES_UNARMED_SOLDIERS",
+        "FREE_OF_DUTY_SERVICES_ALL_SOLDIERS",
+      ];
+
+      const selection = localStorage.getItem("personnel");
+      const isPersonnelStats = getCurrentSelection(selection);
+
+      const responses = await Promise.all(
+        options.map((opt) =>
+          axios.get("getSoldiersStatistics", {
+            params: {
+              statisticalDataOption: opt,
+              isPersonnel: isPersonnelStats,
+            },
+          })
+        )
+      );
+
+      const statsData = {};
+      options.forEach((opt, i) => {
+        statsData[opt] = responses[i].data || [];
+      });
+
+      await generateFullReportPDF(statsData);
+    };
+
+    const generateFullReportPDF = async (statsData) => {
+      // Landscape for wider tables
+      const pdf = new jsPDF("l", "mm", "a4");
+      const currentDate = selectedDate.value;
+
+      // ✅ Wait for render to finish
+      await nextTick();
+      //await new Promise((r) => setTimeout(r, 500));
+
+      // ✳️ Page 1 — Main soldiers table
+      const tableMain = document.querySelector("#soldiers-table");
+      const canvasMain = await html2canvas(tableMain, {
+        scale: 4,
+        useCORS: true,
+      });
+      const imgMain = canvasMain.toDataURL("image/png");
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth - 20; // leave margins
+      const imgHeight = (canvasMain.height * imgWidth) / canvasMain.width;
+      const finalHeight =
+        imgHeight > pageHeight - 30 ? pageHeight - 30 : imgHeight;
+
+      pdf.setFontSize(16);
+      pdf.text(`Unit Service Report — ${currentDate}`, 10, 15);
+      pdf.setFontSize(12);
+      pdf.text("Main Service Table (All Current Assignments)", 10, 22);
+      pdf.addImage(imgMain, "PNG", 10, 30, imgWidth, finalHeight);
+
+      // ✳️ 4 additional pages (statistics)
+      const titles = {
+        ARMED_SERVICES_ARMED_SOLDIERS:
+          "Armed Duties Assigned to Armed Soldiers",
+        UNARMED_SERVICES_ARMED_SOLDIERS:
+          "Unarmed Duties Assigned to Armed Soldiers",
+        UNARMED_SERVICES_UNARMED_SOLDIERS:
+          "Unarmed Duties Assigned to Unarmed Soldiers",
+        FREE_OF_DUTY_SERVICES_ALL_SOLDIERS:
+          "Days Off (Free of Duty) per Soldier",
+      };
+
+      for (const [key, data] of Object.entries(statsData)) {
+        pdf.addPage("l");
+
+        // Build temporary HTML table
+        const container = document.createElement("div");
+        container.style.width = "1400px";
+        container.style.padding = "20px";
+        container.innerHTML = `
+      <h3 style="text-align:center; font-family:Arial;">${titles[key]}</h3>
+      <table border="1" cellspacing="0" cellpadding="6"
+        style="width:100%; border-collapse:collapse; font-size:14px;">
+        <thead>
+          <tr>${Object.keys(data[0] || {})
+            .map((k) => `<th>${k}</th>`)
+            .join("")}</tr>
+        </thead>
+        <tbody>
+          ${data
+            .map(
+              (row) =>
+                `<tr>${Object.values(row)
+                  .map((v) => `<td>${v}</td>`)
+                  .join("")}</tr>`
+            )
+            .join("")}
+        </tbody>
+      </table>
+    `;
+        document.body.appendChild(container);
+
+        // 📸 Capture high-quality image
+        const canvas = await html2canvas(container, {
+          scale: 4,
+          useCORS: true,
+        });
+        const img = canvas.toDataURL("image/png");
+
+        const w = pageWidth - 20;
+        const h = (canvas.height * w) / canvas.width;
+        const finalH = h > pageHeight - 30 ? pageHeight - 30 : h;
+
+        pdf.setFontSize(14);
+        pdf.text(`${titles[key]}`, 10, 15);
+        pdf.addImage(img, "PNG", 10, 25, w, finalH);
+
+        document.body.removeChild(container);
+      }
+
+      // ✳️ Add page numbers
+      const totalPages = pdf.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(10);
+        pdf.text(`Page ${i} of ${totalPages}`, pageWidth - 30, pageHeight - 10);
+      }
+
+      pdf.save(`Service_Report_${currentDate}.pdf`);
     };
 
     const selectSoldier = async (soldier) => {
@@ -493,6 +631,8 @@ export default {
       toggleState,
       handleError,
       getCurrentSelection,
+      fetchAndGenerateStatisticsPDF,
+      generateFullReportPDF,
     };
   },
 };
