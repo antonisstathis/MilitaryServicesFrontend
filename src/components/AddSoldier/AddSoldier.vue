@@ -79,6 +79,7 @@ export default {
         const response = await axios.post("/saveNewSoldier", form);
         messageStore.show(response.data, "success");
       } catch (error) {
+        messageStore.show(error.response.data, "error");
         console.error(error);
         if (error.response?.status === 401) router.push("/signIn");
       }
