@@ -372,21 +372,19 @@ export default {
 
     const newServices = async () => {
       try {
-        for (let i = 0; i < 25; i++) {
-          const isPersonnel = getCurrentSelection();
-          const response = await axios.get("calc", {
-            params: {
-              lastDate: lastDate,
-              isPersonnel: isPersonnel,
-            },
-          });
-          await fetchSoldiers(isPersonnel);
-          messageStore.show(response.data, "success", 3000);
+        const isPersonnel = getCurrentSelection();
+        const response = await axios.get("calc", {
+          params: {
+            lastDate: lastDate,
+            isPersonnel: isPersonnel,
+          },
+        });
+        await fetchSoldiers(isPersonnel);
+        messageStore.show(response.data, "success", 3000);
 
-          await nextTick();
-          await new Promise((r) => setTimeout(r, 400));
-          await fetchAndGenerateStatisticsPDF();
-        }
+        await nextTick();
+        await new Promise((r) => setTimeout(r, 400));
+        await fetchAndGenerateStatisticsPDF();
       } catch (error) {
         handleError(error);
       }
