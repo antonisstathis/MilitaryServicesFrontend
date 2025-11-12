@@ -154,8 +154,8 @@ export default {
     const tableHeaders = ref([]);
     const titles = ref({});
     const locale = ref(localStorage.getItem("lang") || "en");
-    let firstDate;
-    let lastDate;
+    let firstDate = new Date();
+    let lastDate = new Date();
     const selectedDate = ref("");
     const searchQuery = ref("");
     const showSubmenu = ref(false);
@@ -196,8 +196,11 @@ export default {
     };
 
     const getFirstDateCalc = async () => {
+      const isPersonnel = getCurrentSelection();
       try {
-        const response = await axios.get("getFirstCalcDate");
+        const response = await axios.get("getFirstCalcDate", {
+          params: { isPersonnel: isPersonnel },
+        });
         firstDate = new Date(response.data);
       } catch (error) {
         handleError(error);
@@ -269,6 +272,12 @@ export default {
       titles.value = await fetchElementTitles();
     };
 
+    const formatDateOnly = (value) => {
+      if (!value) return null;
+      const date = new Date(value);
+      return date.toISOString().split("T")[0];
+    };
+
     const fetchPrevCalculationData = async (selDate) => {
       tableHeaders.value = await fetchTableTitles("prevcalc");
       localStorage.setItem("selectedDate", selDate);
@@ -279,7 +288,7 @@ export default {
             ? selDate
             : selDate.toLocaleDateString("en-CA");
         const response = await axios.get("getPreviousCalculation", {
-          params: { date: selDate, isPersonnel: isPersonnel },
+          params: { date: formatDateOnly(selDate), isPersonnel: isPersonnel },
         });
         const data = await setTableDataBasedOnLang(response.data);
         if (data.length && isPersonnel) personnel.value = Object.values(data);
@@ -375,7 +384,7 @@ export default {
         const isPersonnel = getCurrentSelection();
         const response = await axios.get("calc", {
           params: {
-            lastDate: lastDate,
+            lastDate: formatDateOnly(lastDate),
             isPersonnel: isPersonnel,
           },
         });
@@ -633,6 +642,7 @@ export default {
       getCurrentSelection,
       fetchAndGenerateStatisticsPDF,
       generateFullReportPDF,
+      formatDateOnly,
     };
   },
 };
