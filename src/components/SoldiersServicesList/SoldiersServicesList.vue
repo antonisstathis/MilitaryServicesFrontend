@@ -381,17 +381,15 @@ export default {
 
     const newServices = async () => {
       try {
-        for (let i = 0; i < 365; i++) {
-          const isPersonnel = getCurrentSelection();
-          const response = await axios.get("calc", {
-            params: {
-              lastDate: formatDateOnly(lastDate),
-              isPersonnel: isPersonnel,
-            },
-          });
-          await fetchSoldiers(isPersonnel);
-          messageStore.show(response.data, "success", 3000);
-        }
+        const isPersonnel = getCurrentSelection();
+        const response = await axios.get("calc", {
+          params: {
+            lastDate: formatDateOnly(lastDate),
+            isPersonnel: isPersonnel,
+          },
+        });
+        await fetchSoldiers(isPersonnel);
+        messageStore.show(response.data, "success", 3000);
       } catch (error) {
         handleError(error);
       }
