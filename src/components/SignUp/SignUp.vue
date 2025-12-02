@@ -27,20 +27,26 @@
       <button type="submit">Generate CSR</button>
     </form>
 
-    <!-- SHOW AFTER CSR GENERATION -->
     <div v-if="csrGenerated" class="success-box">
       <h3>CSR Generated</h3>
       <p>Your Certificate Signing Request is ready.</p>
       <button @click="downloadCSR">Download CSR File</button>
     </div>
 
-    <!-- FINALIZE SIGNUP SECTION -->
     <div class="finalize-section">
       <h3>Already received your certificate?</h3>
       <p>
-        If you already visited the CA office and installed your CRT file, you
-        can complete your registration.
+        Install your CRT file in your browser, then complete your registration
+        below.
       </p>
+
+      <input type="text" v-model="finalizeUsername" placeholder="Username" />
+
+      <input
+        type="password"
+        v-model="finalizePassword"
+        placeholder="Password"
+      />
 
       <button class="finalize-btn" @click="goToFinalize">
         Finalize Registration
@@ -65,6 +71,10 @@ export default {
     const username = ref("");
     const authority = ref("");
     const unit = ref("");
+
+    const finalizeUsername = ref("");
+    const finalizePassword = ref("");
+
     const errorMessage = ref("");
     const csrGenerated = ref(false);
     const csrFileContent = ref(null);
@@ -117,6 +127,8 @@ export default {
       submitSignup,
       csrGenerated,
       downloadCSR,
+      finalizeUsername,
+      finalizePassword,
       goToFinalize,
       goBack,
     };
@@ -151,7 +163,7 @@ body {
   font-size: 1.8rem;
   margin-bottom: 20px;
   font-weight: bold;
-  color: #e0f7fa;
+  color: #f7d774;
 }
 
 input,
@@ -187,7 +199,6 @@ button:hover {
   background-color: #1b5e20;
 }
 
-/* FINALIZE SECTION */
 .finalize-section {
   margin-top: 35px;
   padding: 15px;
@@ -203,7 +214,6 @@ button:hover {
   background-color: #01579b;
 }
 
-/* BACK BUTTON */
 .back-btn {
   background-color: #757575;
   margin-top: 25px;
@@ -229,9 +239,5 @@ button:hover {
   border-radius: 10px;
   border: 1px solid #81c784;
   color: #e8f5e9;
-}
-
-.success-box h3 {
-  margin-bottom: 8px;
 }
 </style>
