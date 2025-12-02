@@ -163,7 +163,7 @@ body {
   font-size: 1.8rem;
   margin-bottom: 20px;
   font-weight: bold;
-  color: #f7d774;
+  color: #9fbf3b;
 }
 
 input,
