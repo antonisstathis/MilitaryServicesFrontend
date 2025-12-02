@@ -6,8 +6,8 @@
       {{ errorMessage }}
     </div>
 
-    <!-- CSR GENERATION FORM -->
-    <form @submit.prevent="submitSignup">
+    <!-- SIGNUP FORM -->
+    <form @submit.prevent="uploadCSR">
       <input type="text" v-model="username" placeholder="Username" required />
 
       <select v-model="authority" required>
@@ -18,21 +18,21 @@
 
       <input type="text" v-model="unit" placeholder="Unit Name" required />
 
-      <button type="submit">Generate CSR</button>
+      <label class="csr-label">Upload CSR (.csr)</label>
+      <input type="file" accept=".csr,.pem,.txt" @change="handleCSR" required />
+
+      <button type="submit">Submit CSR</button>
     </form>
 
-    <div v-if="csrGenerated" class="success-box">
-      <h3>CSR Generated</h3>
-      <p>Your Certificate Signing Request is ready.</p>
-      <button @click="downloadCSR">Download CSR File</button>
+    <div v-if="csrAccepted" class="success-box">
+      <h3>CSR Uploaded</h3>
+      <p>Your certificate will be issued by the officer/CA.</p>
     </div>
 
+    <!-- FINALIZE REGISTRATION -->
     <div class="finalize-section">
       <h3>Already received your certificate?</h3>
-      <p>
-        Install your CRT file in your browser, then complete your registration
-        below.
-      </p>
+      <p>Install your CRT file in your browser, then complete registration:</p>
 
       <input
         type="password"
@@ -46,10 +46,7 @@
         placeholder="Repeat Password"
       />
 
-      <p
-        v-if="finalizePassword && finalizePasswordRepeat && !passwordsMatch"
-        class="password-error"
-      >
+      <p v-if="passwordsFilled && !passwordsMatch" class="password-error">
         Passwords do not match.
       </p>
 
@@ -80,48 +77,53 @@ export default {
     const authority = ref("");
     const unit = ref("");
 
-    const finalizeUsername = ref("");
+    const csrFile = ref(null);
+    const csrAccepted = ref(false);
+    const errorMessage = ref("");
+
     const finalizePassword = ref("");
     const finalizePasswordRepeat = ref("");
 
     const passwordsMatch = computed(() => {
-      return finalizePassword.value === finalizePasswordRepeat.value;
+      return (
+        finalizePassword.value &&
+        finalizePasswordRepeat.value &&
+        finalizePassword.value === finalizePasswordRepeat.value
+      );
     });
 
-    const errorMessage = ref("");
-    const csrGenerated = ref(false);
-    const csrFileContent = ref(null);
+    const passwordsFilled = computed(() => {
+      return finalizePassword.value && finalizePasswordRepeat.value;
+    });
 
-    const submitSignup = async () => {
-      errorMessage.value = "";
-
-      try {
-        const response = await axios.post(
-          "/signup-request",
-          {
-            username: username.value,
-            authority: authority.value,
-            unitName: unit.value,
-          },
-          { responseType: "blob" }
-        );
-
-        csrFileContent.value = response.data;
-        csrGenerated.value = true;
-      } catch (error) {
-        console.error("Signup error:", error);
-        errorMessage.value = "Failed to generate CSR. Check your inputs.";
-      }
+    const handleCSR = (event) => {
+      csrFile.value = event.target.files[0];
     };
 
-    const downloadCSR = () => {
-      const blob = new Blob([csrFileContent.value], {
-        type: "application/x-pkcs10",
-      });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "user.csr";
-      link.click();
+    const uploadCSR = async () => {
+      errorMessage.value = "";
+
+      if (!csrFile.value) {
+        errorMessage.value = "Please upload a CSR file.";
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append("csr", csrFile.value);
+        formData.append("username", username.value);
+        formData.append("authority", authority.value);
+        formData.append("unit", unit.value);
+
+        await axios.post("/signup-request", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        csrAccepted.value = true;
+      } catch (error) {
+        console.error(error);
+        errorMessage.value = "Failed to upload CSR.";
+      }
     };
 
     const goToFinalize = () => {
@@ -129,29 +131,24 @@ export default {
         errorMessage.value = "Passwords do not match.";
         return;
       }
-
       router.push("/signup-finalize");
     };
 
-    // Back to login
-    const goBack = () => {
-      router.push("/");
-    };
+    const goBack = () => router.push("/");
 
     return {
       username,
       authority,
       unit,
-      errorMessage,
-      submitSignup,
-      csrGenerated,
-      downloadCSR,
-
-      finalizeUsername,
+      csrFile,
+      handleCSR,
+      uploadCSR,
+      csrAccepted,
       finalizePassword,
       finalizePasswordRepeat,
       passwordsMatch,
-
+      passwordsFilled,
+      errorMessage,
       goToFinalize,
       goBack,
     };
@@ -186,7 +183,7 @@ body {
   font-size: 1.8rem;
   margin-bottom: 20px;
   font-weight: bold;
-  color: #9fbf3b; /* Military green */
+  color: #9fbf3b;
 }
 
 input,
@@ -203,6 +200,14 @@ select {
 
 input::placeholder {
   color: #666;
+}
+
+.csr-label {
+  font-size: 0.95rem;
+  color: #9fbf3b;
+  margin-top: 10px;
+  display: block;
+  text-align: left;
 }
 
 button {
