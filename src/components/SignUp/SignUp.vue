@@ -42,18 +42,34 @@
         placeholder="Password"
       />
 
-      <button class="finalize-btn" @click="goToFinalize">
+      <input
+        type="password"
+        v-model="finalizePasswordRepeat"
+        placeholder="Repeat Password"
+      />
+
+      <p
+        v-if="finalizePassword && finalizePasswordRepeat && !passwordsMatch"
+        class="password-error"
+      >
+        Passwords do not match.
+      </p>
+
+      <button
+        class="finalize-btn"
+        :disabled="!passwordsMatch"
+        @click="goToFinalize"
+      >
         Finalize Registration
       </button>
     </div>
 
-    <!-- BACK BUTTON -->
     <button class="back-btn" @click="goBack">← Back to Login</button>
   </div>
 </template>
 
 <script>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
 import axios from "axios";
 
@@ -68,6 +84,11 @@ export default {
 
     const finalizeUsername = ref("");
     const finalizePassword = ref("");
+    const finalizePasswordRepeat = ref("");
+
+    const passwordsMatch = computed(() => {
+      return finalizePassword.value === finalizePasswordRepeat.value;
+    });
 
     const errorMessage = ref("");
     const csrGenerated = ref(false);
@@ -82,7 +103,7 @@ export default {
           {
             username: username.value,
             authority: authority.value,
-            unit: unit.value,
+            unitName: unit.value,
           },
           { responseType: "blob" }
         );
@@ -106,9 +127,15 @@ export default {
     };
 
     const goToFinalize = () => {
+      if (!passwordsMatch.value) {
+        errorMessage.value = "Passwords do not match.";
+        return;
+      }
+
       router.push("/signup-finalize");
     };
 
+    // Back to login
     const goBack = () => {
       router.push("/");
     };
@@ -121,8 +148,12 @@ export default {
       submitSignup,
       csrGenerated,
       downloadCSR,
+
       finalizeUsername,
       finalizePassword,
+      finalizePasswordRepeat,
+      passwordsMatch,
+
       goToFinalize,
       goBack,
     };
@@ -157,7 +188,7 @@ body {
   font-size: 1.8rem;
   margin-bottom: 20px;
   font-weight: bold;
-  color: #9fbf3b;
+  color: #9fbf3b; /* Military green */
 }
 
 input,
@@ -206,6 +237,12 @@ button:hover {
 
 .finalize-btn:hover {
   background-color: #01579b;
+}
+
+.password-error {
+  color: #ff5252;
+  font-weight: bold;
+  margin-top: -5px;
 }
 
 .back-btn {
