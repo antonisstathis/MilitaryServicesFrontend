@@ -34,8 +34,6 @@
         below.
       </p>
 
-      <input type="text" v-model="finalizeUsername" placeholder="Username" />
-
       <input
         type="password"
         v-model="finalizePassword"
