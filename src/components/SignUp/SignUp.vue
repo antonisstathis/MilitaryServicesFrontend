@@ -16,13 +16,7 @@
         <option value="ROLE_COMMANDER">Commander</option>
       </select>
 
-      <input
-        type="number"
-        min="1"
-        v-model="unit"
-        placeholder="Unit ID"
-        required
-      />
+      <input type="text" v-model="unit" placeholder="Unit Name" required />
 
       <button type="submit">Generate CSR</button>
     </form>
