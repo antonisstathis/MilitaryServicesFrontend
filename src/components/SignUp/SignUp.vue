@@ -16,8 +16,6 @@
       </select>
 
       <input type="text" v-model="unit" placeholder="Unit Name" required />
-
-      <button type="submit">Continue</button>
     </form>
 
     <div class="finalize-section">
