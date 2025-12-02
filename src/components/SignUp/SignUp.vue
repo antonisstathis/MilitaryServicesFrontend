@@ -6,8 +6,7 @@
       {{ errorMessage }}
     </div>
 
-    <!-- SIGNUP FORM -->
-    <form @submit.prevent="uploadCSR">
+    <form @submit.prevent="goToFinalize">
       <input type="text" v-model="username" placeholder="Username" required />
 
       <select v-model="authority" required>
@@ -18,21 +17,15 @@
 
       <input type="text" v-model="unit" placeholder="Unit Name" required />
 
-      <label class="csr-label">Upload CSR (.csr)</label>
-      <input type="file" accept=".csr,.pem,.txt" @change="handleCSR" required />
-
-      <button type="submit">Submit CSR</button>
+      <button type="submit">Continue</button>
     </form>
 
-    <div v-if="csrAccepted" class="success-box">
-      <h3>CSR Uploaded</h3>
-      <p>Your certificate will be issued by the officer/CA.</p>
-    </div>
-
-    <!-- FINALIZE REGISTRATION -->
     <div class="finalize-section">
-      <h3>Already received your certificate?</h3>
-      <p>Install your CRT file in your browser, then complete registration:</p>
+      <h3>Already installed your certificate?</h3>
+      <p>
+        Make sure your certificate is installed in your browser/OS so that mTLS
+        authentication can identify you. Then choose your password:
+      </p>
 
       <input
         type="password"
@@ -53,7 +46,7 @@
       <button
         class="finalize-btn"
         :disabled="!passwordsMatch"
-        @click="goToFinalize"
+        @click="finalizeSignup"
       >
         Finalize Registration
       </button>
@@ -77,8 +70,6 @@ export default {
     const authority = ref("");
     const unit = ref("");
 
-    const csrFile = ref(null);
-    const csrAccepted = ref(false);
     const errorMessage = ref("");
 
     const finalizePassword = ref("");
@@ -96,42 +87,35 @@ export default {
       return finalizePassword.value && finalizePasswordRepeat.value;
     });
 
-    const handleCSR = (event) => {
-      csrFile.value = event.target.files[0];
-    };
-
-    const uploadCSR = async () => {
-      errorMessage.value = "";
-
-      if (!csrFile.value) {
-        errorMessage.value = "Please upload a CSR file.";
+    const goToFinalize = () => {
+      if (!username.value || !authority.value || !unit.value) {
+        errorMessage.value = "Please complete all fields before continuing.";
         return;
       }
 
-      try {
-        const formData = new FormData();
-        formData.append("csr", csrFile.value);
-        formData.append("username", username.value);
-        formData.append("authority", authority.value);
-        formData.append("unit", unit.value);
-
-        await axios.post("/signup-request", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-
-        csrAccepted.value = true;
-      } catch (error) {
-        console.error(error);
-        errorMessage.value = "Failed to upload CSR.";
-      }
+      errorMessage.value = "";
     };
 
-    const goToFinalize = () => {
+    const finalizeSignup = async () => {
       if (!passwordsMatch.value) {
         errorMessage.value = "Passwords do not match.";
         return;
       }
-      router.push("/signup-finalize");
+
+      try {
+        await axios.post("/signup-finalize", {
+          username: username.value,
+          authority: authority.value,
+          unit: unit.value,
+          password: finalizePassword.value,
+        });
+
+        router.push("/login");
+      } catch (err) {
+        console.error(err);
+        errorMessage.value =
+          "Failed to finalize registration. Make sure your certificate is installed and valid.";
+      }
     };
 
     const goBack = () => router.push("/");
@@ -140,16 +124,16 @@ export default {
       username,
       authority,
       unit,
-      csrFile,
-      handleCSR,
-      uploadCSR,
-      csrAccepted,
+
+      errorMessage,
+
       finalizePassword,
       finalizePasswordRepeat,
       passwordsMatch,
       passwordsFilled,
-      errorMessage,
+
       goToFinalize,
+      finalizeSignup,
       goBack,
     };
   },
@@ -183,7 +167,7 @@ body {
   font-size: 1.8rem;
   margin-bottom: 20px;
   font-weight: bold;
-  color: #9fbf3b;
+  color: #9fbf3b; /* Military green */
 }
 
 input,
@@ -200,14 +184,6 @@ select {
 
 input::placeholder {
   color: #666;
-}
-
-.csr-label {
-  font-size: 0.95rem;
-  color: #9fbf3b;
-  margin-top: 10px;
-  display: block;
-  text-align: left;
 }
 
 button {
