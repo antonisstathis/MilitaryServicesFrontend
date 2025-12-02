@@ -17,6 +17,7 @@
       <button type="submit">Login</button>
     </form>
     <a href="#">Forgot your password?</a>
+    <button class="signup-btn" @click="goToSignUp">Create an Account</button>
   </div>
 </template>
 
@@ -76,12 +77,17 @@ export default {
       }
     };
 
+    const goToSignUp = () => {
+      router.push("/signUp");
+    };
+
     return {
       username,
       password,
       jwtToken,
       errorMessage,
       login,
+      goToSignUp,
     };
   },
 };
@@ -164,6 +170,23 @@ button:hover {
 .login-container a:hover {
   text-decoration: underline;
   color: #1e88e5; /* Darker blue on hover */
+}
+
+.signup-btn {
+  background-color: #1e88e5;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 15px;
+  transition: background-color 0.3s ease;
+}
+
+.signup-btn:hover {
+  background-color: #1565c0;
 }
 
 .error-message {
