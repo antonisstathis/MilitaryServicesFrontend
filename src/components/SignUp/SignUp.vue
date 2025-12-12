@@ -102,8 +102,6 @@ export default {
 
       try {
         await axios.post("/signUp", {
-          username: username.value,
-          authority: authority.value,
           unit: unit.value,
           password: finalizePassword.value,
         });
