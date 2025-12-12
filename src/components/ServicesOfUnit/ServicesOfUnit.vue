@@ -319,9 +319,7 @@ export default {
           params: { date: dateOfServices, isPersonnel: isPersonnel },
         });
         const data = response.data;
-        if (data.length) {
-          services.value = data;
-        }
+        services.value = data;
       } catch (error) {
         handleError(error);
       }
