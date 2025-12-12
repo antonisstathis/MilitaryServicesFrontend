@@ -6,17 +6,7 @@
       {{ errorMessage }}
     </div>
 
-    <form @submit.prevent="goToFinalize">
-      <input type="text" v-model="username" placeholder="Username" required />
-
-      <select v-model="authority" required>
-        <option disabled value="">Select Authority</option>
-        <option value="ROLE_SOLDIER">Soldier</option>
-        <option value="ROLE_COMMANDER">Commander</option>
-      </select>
-
-      <input type="text" v-model="unit" placeholder="Unit Name" required />
-    </form>
+    <form @submit.prevent="goToFinalize"></form>
 
     <div class="finalize-section">
       <h3>Already installed your certificate?</h3>
