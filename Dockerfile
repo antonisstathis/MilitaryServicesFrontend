@@ -20,4 +20,4 @@ COPY certs/server.key       /etc/nginx/certs/server.key
 COPY certs/server.pem       /etc/nginx/certs/server.pem
 COPY certs/ca-chain.crt     /etc/nginx/certs/ca-chain.crt
 
-EXPOSE 9090
+EXPOSE 443
