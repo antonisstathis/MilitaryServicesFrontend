@@ -28,6 +28,12 @@
         <option value="unarmed">Unarmed</option>
       </select>
 
+      <select v-model="personnelType" required>
+        <option disabled value="">Personnel Type</option>
+        <option value="personnel">Personnel</option>
+        <option value="soldier">Soldier</option>
+      </select>
+
       <h3 style="margin-top: 25px">Choose Password</h3>
 
       <input
@@ -80,6 +86,7 @@ export default {
     const city = ref("");
     const address = ref("");
     const situation = ref("");
+    const personnelType = ref("");
 
     const finalizePassword = ref("");
     const finalizePasswordRepeat = ref("");
@@ -108,6 +115,7 @@ export default {
         city.value &&
         address.value &&
         situation.value &&
+        personnelType.value &&
         passwordsMatch.value
       );
     });
@@ -129,6 +137,7 @@ export default {
           city: city.value,
           address: address.value,
           situation: situation.value,
+          personnelType: personnelType.value, // personnel | soldier
           password: finalizePassword.value,
         });
 
@@ -151,6 +160,7 @@ export default {
       city,
       address,
       situation,
+      personnelType,
       finalizePassword,
       finalizePasswordRepeat,
       passwordsMatch,
@@ -172,7 +182,7 @@ export default {
   padding: 25px 35px;
   max-width: 450px;
   margin: auto;
-  color: #556b2f;
+  color: #556b2f; /* military green */
   text-align: center;
 }
 
