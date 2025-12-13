@@ -6,25 +6,42 @@
       {{ errorMessage }}
     </div>
 
-    <form @submit.prevent="goToFinalize"></form>
-
     <div class="finalize-section">
-      <h3>Already installed your certificate?</h3>
-      <p>
-        Make sure your certificate is installed in your browser/OS so that mTLS
-        authentication can identify you. Then choose your password:
-      </p>
+      <h3>Personal Information</h3>
+
+      <input v-model="name" placeholder="Name" required />
+      <input v-model="surname" placeholder="Surname" required />
+      <input v-model="patronymic" placeholder="Patronymic" required />
+      <input v-model="matronymic" placeholder="Matronymic" required />
+      <input
+        v-model="registrationNumber"
+        placeholder="Registration Number"
+        required
+      />
+      <input v-model="telephone" placeholder="Telephone" required />
+      <input v-model="city" placeholder="City" required />
+      <input v-model="address" placeholder="Address" required />
+
+      <select v-model="situation" required>
+        <option disabled value="">Situation</option>
+        <option value="armed">Armed</option>
+        <option value="unarmed">Unarmed</option>
+      </select>
+
+      <h3 style="margin-top: 25px">Choose Password</h3>
 
       <input
         type="password"
         v-model="finalizePassword"
         placeholder="Password"
+        required
       />
 
       <input
         type="password"
         v-model="finalizePasswordRepeat"
         placeholder="Repeat Password"
+        required
       />
 
       <p v-if="passwordsFilled && !passwordsMatch" class="password-error">
@@ -33,7 +50,7 @@
 
       <button
         class="finalize-btn"
-        :disabled="!passwordsMatch"
+        :disabled="!formValid"
         @click="finalizeSignup"
       >
         Finalize Registration
@@ -54,71 +71,92 @@ export default {
   setup() {
     const router = useRouter();
 
-    const username = ref("");
-    const authority = ref("");
-    const unit = ref("");
-
-    const errorMessage = ref("");
+    const name = ref("");
+    const surname = ref("");
+    const patronymic = ref("");
+    const matronymic = ref("");
+    const registrationNumber = ref("");
+    const telephone = ref("");
+    const city = ref("");
+    const address = ref("");
+    const situation = ref("");
 
     const finalizePassword = ref("");
     const finalizePasswordRepeat = ref("");
 
-    const passwordsMatch = computed(() => {
-      return (
+    const errorMessage = ref("");
+
+    const passwordsMatch = computed(
+      () =>
         finalizePassword.value &&
         finalizePasswordRepeat.value &&
         finalizePassword.value === finalizePasswordRepeat.value
+    );
+
+    const passwordsFilled = computed(
+      () => finalizePassword.value && finalizePasswordRepeat.value
+    );
+
+    const formValid = computed(() => {
+      return (
+        name.value &&
+        surname.value &&
+        patronymic.value &&
+        matronymic.value &&
+        registrationNumber.value &&
+        telephone.value &&
+        city.value &&
+        address.value &&
+        situation.value &&
+        passwordsMatch.value
       );
     });
 
-    const passwordsFilled = computed(() => {
-      return finalizePassword.value && finalizePasswordRepeat.value;
-    });
-
-    const goToFinalize = () => {
-      if (!username.value || !authority.value || !unit.value) {
-        errorMessage.value = "Please complete all fields before continuing.";
-        return;
-      }
-
-      errorMessage.value = "";
-    };
-
     const finalizeSignup = async () => {
-      if (!passwordsMatch.value) {
-        errorMessage.value = "Passwords do not match.";
+      if (!formValid.value) {
+        errorMessage.value = "Please complete all required fields correctly.";
         return;
       }
 
       try {
         await axios.post("/signUp", {
-          unit: unit.value,
+          name: name.value,
+          surname: surname.value,
+          patronymic: patronymic.value,
+          matronymic: matronymic.value,
+          registrationNumber: registrationNumber.value,
+          telephone: telephone.value,
+          city: city.value,
+          address: address.value,
+          situation: situation.value,
           password: finalizePassword.value,
         });
 
         router.push("/login");
       } catch (err) {
         console.error(err);
-        errorMessage.value =
-          "Failed to finalize registration. Make sure your certificate is installed and valid.";
+        errorMessage.value = "Registration failed. Please try again.";
       }
     };
 
     const goBack = () => router.push("/");
 
     return {
-      username,
-      authority,
-      unit,
-
-      errorMessage,
-
+      name,
+      surname,
+      patronymic,
+      matronymic,
+      registrationNumber,
+      telephone,
+      city,
+      address,
+      situation,
       finalizePassword,
       finalizePasswordRepeat,
       passwordsMatch,
       passwordsFilled,
-
-      goToFinalize,
+      formValid,
+      errorMessage,
       finalizeSignup,
       goBack,
     };
@@ -127,113 +165,60 @@ export default {
 </script>
 
 <style scoped>
-body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(to right, #2c5364, #0f2027);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  margin: 0;
-  color: #fff;
-}
-
 .signup-container {
   background-color: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(12px);
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   padding: 25px 35px;
-  width: 100%;
   max-width: 450px;
+  margin: auto;
+  color: #556b2f;
   text-align: center;
-}
-
-.signup-container h1 {
-  font-size: 1.8rem;
-  margin-bottom: 20px;
-  font-weight: bold;
-  color: #9fbf3b; /* Military green */
 }
 
 input,
 select {
   width: 100%;
   padding: 12px;
-  margin: 12px 0;
-  border: none;
+  margin: 10px 0;
   border-radius: 8px;
-  outline: none;
-  background: rgba(255, 255, 255, 0.85);
-  font-size: 1rem;
-}
-
-input::placeholder {
-  color: #666;
+  border: none;
 }
 
 button {
-  background-color: #2e7d32;
-  border: none;
-  color: white;
-  padding: 12px 15px;
-  font-size: 1rem;
-  border-radius: 8px;
-  cursor: pointer;
   width: 100%;
-  margin-top: 15px;
-  transition: background-color 0.3s ease;
-}
-
-button:hover {
-  background-color: #1b5e20;
-}
-
-.finalize-section {
-  margin-top: 35px;
-  padding: 15px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
 }
 
 .finalize-btn {
   background-color: #0277bd;
+  color: white;
+  margin-top: 15px;
 }
 
-.finalize-btn:hover {
-  background-color: #01579b;
+.finalize-btn:disabled {
+  background-color: #555;
+  cursor: not-allowed;
 }
 
 .password-error {
   color: #ff5252;
   font-weight: bold;
-  margin-top: -5px;
 }
 
 .back-btn {
   background-color: #757575;
-  margin-top: 25px;
-}
-
-.back-btn:hover {
-  background-color: #616161;
+  margin-top: 20px;
 }
 
 .error-message {
   background: #ffebee;
   color: #c62828;
   padding: 10px;
-  margin-bottom: 15px;
   border-radius: 8px;
-  font-weight: bold;
-}
-
-.success-box {
-  background: rgba(200, 230, 201, 0.3);
-  padding: 15px;
-  margin-top: 20px;
-  border-radius: 10px;
-  border: 1px solid #81c784;
-  color: #e8f5e9;
+  margin-bottom: 15px;
 }
 </style>
